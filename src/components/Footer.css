@@ -1,0 +1,196 @@
+
+.footer {
+  margin-top: 70px;
+  padding: 45px 6% 20px;
+  background-color: var(--color-plum);
+  color: var(--color-white);
+}
+
+.footer__main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  padding-bottom: 30px;
+}
+
+/* Brand */
+
+.footer__logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer__logo > span {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  background-color: var(--color-orange);
+  color: var(--color-plum);
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.footer__logo h2 {
+  font-size: 17px;
+  letter-spacing: 1px;
+}
+
+.footer__logo small {
+  display: block;
+  margin-top: 3px;
+  color: #cdbed2;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.footer__brand > p {
+  margin-top: 12px;
+  color: #cdbed2;
+  font-size: 12px;
+}
+
+/* Links */
+
+.footer__links {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.footer__links a {
+  color: #e8dfea;
+  font-size: 12px;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.footer__links a:hover {
+  color: var(--color-orange);
+}
+
+/* Delivery */
+
+.footer__delivery {
+  text-align: right;
+}
+
+.footer__delivery > span {
+  color: var(--color-orange);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.footer__delivery p {
+  margin-top: 7px;
+  color: #e1d7e4;
+  font-size: 11px;
+}
+
+.footer__delivery strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--color-white);
+  font-size: 12px;
+}
+
+/* Bottom */
+
+.footer__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.footer__bottom p {
+  color: #a99aaa;
+  font-size: 10px;
+}
+
+.footer__social {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.footer__social a {
+  color: #cdbed2;
+  font-size: 10px;
+  transition: color 0.2s ease;
+}
+
+.footer__social a:hover {
+  color: var(--color-orange);
+}
+
+/* Admin Login */
+
+.footer__admin {
+  padding-left: 16px;
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+
+  color: #a99aaa !important;
+  font-size: 9px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.3px;
+}
+
+.footer__admin:hover {
+  color: var(--color-orange) !important;
+}
+
+/* Tablet */
+
+@media (max-width: 800px) {
+  .footer__main {
+    flex-wrap: wrap;
+  }
+
+  .footer__delivery {
+    text-align: left;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  .footer {
+    margin-top: 50px;
+    padding: 40px 5% 18px;
+  }
+
+  .footer__main {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 28px;
+  }
+
+  .footer__links {
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .footer__bottom {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .footer__social {
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .footer__admin {
+    padding-left: 0;
+    border-left: none;
+  }
+}

@@ -1,0 +1,316 @@
+.offer-banner {
+  position: relative;
+
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+
+  align-items: center;
+
+  gap: 40px;
+
+  margin: 70px 6%;
+
+  padding: 60px 7%;
+
+  min-height: 360px;
+
+  overflow: hidden;
+
+  border-radius: 30px;
+
+  background-color: var(--color-orange);
+}
+
+/* Decorative circles */
+
+.offer-banner::before {
+  content: "";
+
+  position: absolute;
+
+  width: 280px;
+  height: 280px;
+
+  left: -130px;
+  bottom: -150px;
+
+  border-radius: 50%;
+
+  background-color: rgba(255, 255, 255, 0.18);
+}
+
+.offer-banner::after {
+  content: "";
+
+  position: absolute;
+
+  width: 220px;
+  height: 220px;
+
+  right: -80px;
+  top: -100px;
+
+  border-radius: 50%;
+
+  background-color: rgba(59, 35, 76, 0.12);
+}
+
+/* Content */
+
+.offer-banner__content {
+  position: relative;
+  z-index: 2;
+
+  max-width: 650px;
+}
+
+.offer-banner__eyebrow {
+  color: var(--color-plum);
+
+  font-size: 10px;
+  font-weight: 900;
+
+  letter-spacing: 2px;
+}
+
+.offer-banner h2 {
+  margin-top: 12px;
+
+  color: var(--color-plum);
+
+  font-size: clamp(36px, 4vw, 52px);
+
+  line-height: 1.05;
+
+  letter-spacing: -1.5px;
+}
+
+.offer-banner h2 span {
+  color: var(--color-ink);
+}
+
+.offer-banner__content > p {
+  margin-top: 16px;
+
+  color: #55464a;
+
+  font-size: 15px;
+}
+
+/* Areas */
+
+.offer-banner__areas {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  margin-top: 18px;
+}
+
+.offer-banner__areas span {
+  padding: 8px 12px;
+
+  border-radius: 9px;
+
+  background-color: rgba(255, 255, 255, 0.45);
+
+  color: var(--color-plum);
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+/* Button */
+
+.offer-banner__button {
+  margin-top: 24px;
+
+  padding: 14px 21px;
+
+  border: none;
+
+  border-radius: 12px;
+
+  background-color: var(--color-plum);
+
+  color: var(--color-white);
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.offer-banner__button:hover {
+  transform: translateY(-3px);
+
+  box-shadow: 0 12px 25px rgba(59, 35, 76, 0.2);
+}
+
+/* Visual */
+
+.offer-banner__visual {
+  position: relative;
+
+  min-height: 280px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.offer-banner__ticket {
+  position: relative;
+  z-index: 3;
+
+  width: 210px;
+  height: 235px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 24px;
+
+  background-color: var(--color-plum);
+
+  color: var(--color-white);
+
+  box-shadow: 0 25px 45px rgba(59, 35, 76, 0.22);
+
+  transform: rotate(4deg);
+
+  transition: transform 0.3s ease;
+}
+
+.offer-banner__ticket:hover {
+  transform: rotate(0deg) translateY(-5px);
+}
+
+.offer-banner__ticket span {
+  color: var(--color-orange);
+
+  font-size: 18px;
+  font-weight: 900;
+
+  letter-spacing: 2px;
+}
+
+.offer-banner__ticket strong {
+  margin-top: 3px;
+
+  font-size: 25px;
+
+  letter-spacing: 1px;
+}
+
+.offer-banner__ticket small {
+  margin-top: 25px;
+
+  color: #d8c9dd;
+
+  font-size: 8px;
+  font-weight: 700;
+
+  letter-spacing: 1.5px;
+}
+
+.offer-banner__ticket b {
+  margin-top: 5px;
+
+  color: var(--color-white);
+
+  font-size: 30px;
+}
+
+/* Floating circles */
+
+.offer-banner__circle {
+  position: absolute;
+  z-index: 4;
+
+  width: 55px;
+  height: 55px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background-color: var(--color-white);
+
+  color: var(--color-plum);
+
+  font-size: 24px;
+
+  box-shadow: 0 12px 25px rgba(33, 27, 29, 0.12);
+}
+
+.offer-banner__circle--one {
+  top: 25px;
+  left: 10%;
+
+  transform: rotate(-15deg);
+}
+
+.offer-banner__circle--two {
+  right: 8%;
+  bottom: 20px;
+
+  background-color: var(--color-sage);
+
+  color: var(--color-white);
+
+  transform: rotate(12deg);
+}
+
+/* Tablet */
+
+@media (max-width: 900px) {
+  .offer-banner {
+    grid-template-columns: 1fr;
+
+    padding: 55px 7%;
+  }
+
+  .offer-banner__content {
+    text-align: center;
+    margin: 0 auto;
+  }
+
+  .offer-banner__areas {
+    justify-content: center;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  .offer-banner {
+    margin: 50px 4%;
+
+    padding: 45px 6%;
+
+    border-radius: 24px;
+  }
+
+  .offer-banner h2 {
+    font-size: 40px;
+  }
+
+  .offer-banner__visual {
+    min-height: 250px;
+  }
+
+  .offer-banner__ticket {
+    width: 180px;
+    height: 205px;
+  }
+}

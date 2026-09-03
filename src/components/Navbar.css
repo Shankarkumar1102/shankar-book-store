@@ -1,0 +1,358 @@
+.navbar {
+  width: 100%;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 16px 6%;
+  background-color: var(--color-cream);
+  border-bottom: 1px solid var(--color-light-border);
+  position: relative;
+  z-index: 100;
+}
+
+/* ================= LOGO ================= */
+
+.navbar__logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.navbar__logo-mark {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background-color: var(--color-plum);
+  color: var(--color-white);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.navbar__logo h1 {
+  color: var(--color-plum);
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: 1px;
+}
+
+.navbar__logo div span {
+  display: block;
+  margin-top: 4px;
+  color: var(--color-ink);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+/* ================= DESKTOP SEARCH ================= */
+
+.navbar__search {
+  width: min(420px, 100%);
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  border: 1px solid var(--color-light-border);
+  border-radius: 14px;
+  background-color: var(--color-white);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.navbar__search:focus-within {
+  border-color: var(--color-plum);
+  box-shadow: 0 0 0 3px rgba(59, 35, 76, 0.08);
+}
+
+.navbar__search span {
+  color: var(--color-plum);
+  font-size: 24px;
+}
+
+.navbar__search input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--color-ink);
+}
+
+.navbar__search input::placeholder {
+  color: #9a8f91;
+}
+
+/* ================= LINKS ================= */
+
+.navbar__links {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-shrink: 0;
+}
+
+.navbar__links a {
+  color: var(--color-ink);
+  font-size: 14px;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.navbar__links a:hover {
+  color: var(--color-plum);
+}
+
+/* ================= CART ================= */
+
+.navbar__cart {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 12px;
+  background-color: var(--color-plum);
+  color: var(--color-white);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.navbar__cart:hover {
+  background-color: #4c2c61;
+  transform: translateY(-2px);
+}
+
+.navbar__cart-icon {
+  font-size: 15px;
+}
+
+.navbar__cart-count {
+  min-width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  border-radius: 50%;
+  background-color: var(--color-orange);
+  color: var(--color-ink);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+/* ================= MOBILE SEARCH BUTTON ================= */
+
+.navbar__mobile-search-button {
+  display: none;
+}
+
+/* ================= MOBILE SEARCH BAR ================= */
+
+.navbar__mobile-search {
+  display: none;
+}
+
+/* ================= TABLET ================= */
+
+@media (max-width: 850px) {
+  .navbar {
+    gap: 15px;
+    padding: 14px 4%;
+  }
+
+  .navbar__search--desktop {
+    max-width: 250px;
+  }
+
+  .navbar__links {
+    gap: 12px;
+  }
+
+  .navbar__links a {
+    display: none;
+  }
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width: 600px) {
+  .navbar {
+    min-height: 70px;
+    padding: 14px 4%;
+    gap: 10px;
+  }
+
+  /* Logo */
+
+  .navbar__logo-mark {
+    width: 38px;
+    height: 38px;
+    font-size: 19px;
+    border-radius: 11px;
+  }
+
+  .navbar__logo h1 {
+    font-size: 15px;
+  }
+
+  .navbar__logo div span {
+    font-size: 7px;
+    letter-spacing: 1.5px;
+  }
+
+  /* Hide desktop search */
+
+  .navbar__search--desktop {
+    display: none;
+  }
+
+  /* Mobile search icon */
+
+  .navbar__mobile-search-button {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid var(--color-light-border);
+    border-radius: 12px;
+    background-color: var(--color-white);
+    color: var(--color-plum);
+    font-size: 25px;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .navbar__mobile-search-button:active {
+    transform: scale(0.95);
+  }
+
+  .navbar__mobile-search-button:hover {
+    border-color: var(--color-plum);
+    background-color: #fff;
+  }
+
+  /* Mobile search opened */
+
+  .navbar__mobile-search {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 4%;
+    right: 4%;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 12px;
+    border: 1px solid var(--color-light-border);
+    border-radius: 14px;
+    background-color: var(--color-white);
+    box-shadow: 0 10px 30px rgba(59, 35, 76, 0.12);
+    z-index: 150;
+  }
+
+  .navbar__mobile-search:focus-within {
+    border-color: var(--color-plum);
+    box-shadow:
+      0 10px 30px rgba(59, 35, 76, 0.12),
+      0 0 0 3px rgba(59, 35, 76, 0.06);
+  }
+
+  .navbar__mobile-search-icon {
+    color: var(--color-plum);
+    font-size: 23px;
+    flex-shrink: 0;
+  }
+
+  .navbar__mobile-search input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-ink);
+    font-size: 14px;
+  }
+
+  .navbar__mobile-search input::placeholder {
+    color: #9a8f91;
+  }
+
+  .navbar__mobile-search-close {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--color-ink);
+    font-size: 24px;
+    cursor: pointer;
+  }
+
+  /* Cart */
+
+  .navbar__cart {
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  .navbar__cart > span:nth-child(2) {
+    display: none;
+  }
+}
+
+/* ================= SMALL PHONES ================= */
+
+@media (max-width: 380px) {
+  .navbar {
+    gap: 7px;
+  }
+
+  .navbar__logo {
+    gap: 7px;
+  }
+
+  .navbar__logo-mark {
+    width: 36px;
+    height: 36px;
+  }
+
+  .navbar__logo h1 {
+    font-size: 13px;
+  }
+
+  .navbar__logo div span {
+    font-size: 6px;
+  }
+
+  .navbar__mobile-search-button {
+    width: 38px;
+    height: 38px;
+  }
+
+  .navbar__cart {
+    padding: 9px;
+  }
+}
+
