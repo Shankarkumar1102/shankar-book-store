@@ -1,0 +1,61 @@
+const trendingProduct = [
+  {
+    id: "kc-001",
+    name: "KATANA",
+    type: "Steel",
+    category: "Keychains",
+    price: 350,
+    offer: "NO",
+    size: "Medium",
+    color: "Black & White",
+    image: "/images/keychains/Katana1.jpg",
+  },
+
+  {
+    id: "kc-002",
+    name: "KATANA",
+    type: "Steel",
+    category: "Keychains",
+    price: 350,
+    offer: "NO",
+    size: "Medium",
+    color: "Black",
+    image: "/images/keychains/Katana2.jpg",
+  },
+  {
+    id: "pen-01",
+    name: "Classmate LOOP",
+    price: 20,
+    brand: "CLASSMATE",
+    type: "BALL",
+    color: "BLUE",
+    category: "Pens & Writing",
+  },
+    {
+    id: "pen-05",
+    name: "Doms INXTRA",
+    price: 5,
+    brand: "DOMS",
+    type: "BALL",
+    color: "BLACK",
+    category: "Pens & Writing",
+    packOptions: [
+      {
+        quantity: 10,
+        price: 43,
+      },
+    ],
+  },
+  {
+    id: "kc-011",
+    name: "THOR KEYCHAIN",
+    type: "Steel",
+    category: "Keychains",
+    price: 100,
+    offer: "NO",
+    size: "Small",
+    color: "Red",
+    image: "",
+  },
+];
+export default trendingProduct;

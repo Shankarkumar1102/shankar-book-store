@@ -7,6 +7,7 @@ const pens = [
     type: "BALL",
     color: "BLUE",
     category: "Pens & Writing",
+    image: "/images/pen/loop.jpg",
   },
 
   {
@@ -17,6 +18,7 @@ const pens = [
     type: "BALL",
     color: "BLUE",
     category: "Pens & Writing",
+    image: "/images/pen/jetter.jpg",
   },
 
   {
@@ -27,68 +29,61 @@ const pens = [
     type: "BALL",
     color: "BLUE",
     category: "Pens & Writing",
+     image: "/images/pen/uniball.jpg",
   },
 
   {
     id: "pen-04",
-    name: "Doms INXTRA",
-    price: 5,
+    name: "Doms INXTRA set of 5 pieces",
+    price: 23,
     brand: "DOMS",
     type: "BALL",
     color: "BLUE",
     category: "Pens & Writing",
-    packOptions: [
-      {
-        quantity: 5,
-        price: 22,
-      },
-      {
-        quantity: 10,
-        price: 43,
-      },
-    ],
+    image: "/images/pen/inxtra.jpg",
   },
 
   {
     id: "pen-05",
-    name: "Doms INXTRA",
-    price: 5,
-    brand: "DOMS",
-    type: "BALL",
+    name: "Hauser KNOX",
+    price: 20,
+    brand: "Hauser",
+    type: "Blue",
     color: "BLACK",
     category: "Pens & Writing",
-    packOptions: [
-      {
-        quantity: 10,
-        price: 43,
-      },
-    ],
+    image: "/images/pen/KNOX.jpg",
   },
 
   {
     id: "pen-06",
-    name: "Doms INXIFY",
-    price: 5,
+    name: "Doms INXIFY set of 5 pieces",
+    price: 23,
     brand: "DOMS",
     type: "GEL",
     color: "BLUE",
     category: "Pens & Writing",
-    packOptions: [
-      {
-        quantity: 5,
-        price: 22,
-      },
-    ],
+    image: "/images/pen/inxify.jpg",
+  },
+  {
+    id: "pen-46",
+    name: "Doms INXIFY set of 5 pieces",
+    price: 23,
+    brand: "DOMS",
+    type: "GEL",
+    color: "black",
+    category: "Pens & Writing",
+    image: "/images/pen/inxifyb.jpg",
   },
 
   {
     id: "pen-07",
-    name: "Butterflow",
+    name: "Butterflow 10rs per piece",
     price: 10,
     brand: "CELLO",
     type: "BALL",
     color: "BLUE",
     category: "Pens & Writing",
+    image: "/images/pen/butterflow.jpg",
   },
 
   {
@@ -99,26 +94,7 @@ const pens = [
     type: "BALL",
     color: "BLUE",
     category: "Pens & Writing",
-  },
-
-  {
-    id: "pen-09",
-    name: "ADD METAL",
-    price: 15,
-    brand: "ADD",
-    type: "GEL BALL",
-    color: "BLUE",
-    category: "Pens & Writing",
-  },
-
-  {
-    id: "pen-10",
-    name: "ADD METAL",
-    price: 10,
-    brand: "ADD",
-    type: "GEL BALL",
-    color: "BLUE",
-    category: "Pens & Writing",
+    image: "/images/pen/trent.jpg",
   },
 
   {
@@ -129,22 +105,7 @@ const pens = [
     type: "INK",
     color: "BLUE",
     category: "Pens & Writing",
-  },
-
-  {
-    id: "pen-12",
-    name: "DOMS EVERYDAY",
-    price: 5,
-    brand: "DOMS",
-    type: "BALL",
-    color: "BLUE",
-    category: "Pens & Writing",
-    packOptions: [
-      {
-        quantity: 20,
-        price: 80,
-      },
-    ],
+    image: "/images/pen/foctane.jpg",
   },
 
   {
@@ -155,6 +116,7 @@ const pens = [
     type: "Liquid Ball",
     color: "BLUE",
     category: "Pens & Writing",
+    image: "/images/pen/kent.jpg",
   },
 
   {
@@ -165,6 +127,7 @@ const pens = [
     type: "BALL",
     color: "BLUE",
     category: "Pens & Writing",
+    image: "/images/pen/cosmo.jpg",
   },
 
   {
@@ -175,6 +138,7 @@ const pens = [
     type: "GLITER GEL PEN",
     color: "10 Colours",
     category: "Pens & Writing",
+    image: "/images/pen/gliter.jpg",
   },
 
   {
@@ -185,12 +149,7 @@ const pens = [
     type: "BALL",
     color: "BLUE",
     category: "Pens & Writing",
-    packOptions: [
-      {
-        quantity: 10,
-        price: 85,
-      },
-    ],
+    image: "/images/pen/autoclick.jpg",
   },
 
   {
@@ -201,17 +160,12 @@ const pens = [
     type: "BALL",
     color: "BLACK",
     category: "Pens & Writing",
-    packOptions: [
-      {
-        quantity: 10,
-        price: 85,
-      },
-    ],
+    image: "/images/pen/autoclickb.jpg",
   },
 
   {
     id: "pen-18",
-    name: "Pentonic",
+    name: "Pentonic BLUE BALL",
     price: 10,
     brand: "LINC",
     type: "BALL",
@@ -223,11 +177,12 @@ const pens = [
         price: 85,
       },
     ],
+    image: "/images/pen/pentonic.jpg",
   },
 
   {
     id: "pen-19",
-    name: "Pentonic",
+    name: "Pentonic BALL BLACK",
     price: 10,
     brand: "LINC",
     type: "BALL",
@@ -239,15 +194,17 @@ const pens = [
         price: 85,
       },
     ],
+    image: "/images/pen/pentonicb.jpg",
   },
+
 
   {
     id: "pen-20",
-    name: "Pentonic",
+    name: "Pentonic GEL BLUE",
     price: 10,
     brand: "LINC",
-    type: "BALL",
-    color: "RED",
+    type: "GEL",
+    color: "blue",
     category: "Pens & Writing",
     packOptions: [
       {
@@ -255,15 +212,16 @@ const pens = [
         price: 85,
       },
     ],
+    image: "/images/pen/pentonicr.jpg",
   },
 
   {
     id: "pen-21",
-    name: "Pentonic",
+    name: "Pentonic GEL BLACK ",
     price: 10,
     brand: "LINC",
     type: "BALL",
-    color: "GREEN",
+    color: "BLACK",
     category: "Pens & Writing",
     packOptions: [
       {
@@ -271,26 +229,18 @@ const pens = [
         price: 85,
       },
     ],
-  },
-
-  {
-    id: "pen-22",
-    name: "Classmate UAO",
-    price: 10,
-    brand: "CLASSMATE",
-    type: "BALL",
-    color: "BLUE",
-    category: "Pens & Writing",
+    image: "/images/pen/pentonicg.jpg",
   },
 
   {
     id: "pen-23",
-    name: "LINC SIGNETTA AERO",
-    price: 15,
+    name: "LINC SIGNETTA AERO 10rs per piece",
+    price: 10,
     brand: "LINC",
     type: "BALL",
     color: "BLUE",
     category: "Pens & Writing",
+    image: "/images/pen/signetta.jpg",
   },
 
   {
@@ -497,8 +447,8 @@ const pens = [
 
   {
     id: "pen-43",
-    name: "LIKHO PHEKO",
-    price: 3,
+    name: "LIKHO PHEKO pack of 5",
+    price: 15,
     brand: "LIKHO PHEKO",
     type: "BALL",
     color: "BLUE",
@@ -507,8 +457,8 @@ const pens = [
 
   {
     id: "pen-44",
-    name: "LIKHO PHEKO",
-    price: 3,
+    name: "LIKHO PHEKO pack of 5",
+    price: 15,
     brand: "LIKHO PHEKO",
     type: "BALL",
     color: "BLACK",
@@ -517,8 +467,8 @@ const pens = [
 
   {
     id: "pen-45",
-    name: "LIKHO PHEKO",
-    price: 3,
+    name: "LIKHO PHEKO Pack of 5",
+    price: 15,
     brand: "LIKHO PHEKO",
     type: "BALL",
     color: "RED",
