@@ -5,10 +5,6 @@
   color: #241f20;
 }
 
-/* =========================================================
-   SIDEBAR
-========================================================= */
-
 .admin__sidebar {
   position: fixed;
   top: 0;
@@ -42,6 +38,7 @@
   color: #241f20;
   font-size: 21px;
   font-weight: 800;
+  box-shadow: 0 8px 20px rgba(231, 163, 75, 0.2);
 }
 
 .admin__brand h1 {
@@ -60,10 +57,6 @@
   letter-spacing: 2px;
 }
 
-/* =========================================================
-   NAVIGATION
-========================================================= */
-
 .admin__nav {
   display: flex;
   flex-direction: column;
@@ -71,13 +64,14 @@
 }
 
 .admin__nav-item {
+  position: relative;
   width: 100%;
   display: flex;
   align-items: center;
   gap: 13px;
   padding: 13px 14px;
-  border: none;
-  border-radius: 11px;
+  border: 1px solid transparent;
+  border-radius: 12px;
   background: transparent;
   color: rgba(255, 255, 255, 0.6);
   font-family: inherit;
@@ -85,7 +79,7 @@
   font-weight: 600;
   text-align: left;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
 }
 
 .admin__nav-item span {
@@ -93,53 +87,78 @@
   display: flex;
   justify-content: center;
   font-size: 16px;
+  transition: transform 0.25s ease;
 }
 
 .admin__nav-item:hover {
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.08);
   color: #fff;
+  transform: translateX(3px);
+}
+
+.admin__nav-item:hover span {
+  transform: scale(1.1);
 }
 
 .admin__nav-item--active {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.06);
   color: #fff;
+  box-shadow: inset 3px 0 0 #e7a34b;
 }
 
 .admin__nav-item--active span {
   color: #e7a34b;
 }
 
-/* =========================================================
-   SIDEBAR BOTTOM
-========================================================= */
-
 .admin__sidebar-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
   margin-top: auto;
 }
 
-.admin__store-button {
+.admin__store-button,
+.admin__logout-button {
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   padding: 12px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 11px;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.65);
   font-family: inherit;
   font-size: 12px;
   font-weight: 600;
-  text-align: left;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
+}
+
+.admin__store-button {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .admin__store-button:hover {
   border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.09);
   color: #fff;
+  transform: translateY(-2px);
 }
 
-/* =========================================================
-   MAIN
-========================================================= */
+.admin__logout-button {
+  border: 1px solid rgba(231, 163, 75, 0.18);
+  background: rgba(231, 163, 75, 0.08);
+  color: #e7a34b;
+}
+
+.admin__logout-button:hover {
+  background: #e7a34b;
+  color: #241f20;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(231, 163, 75, 0.18);
+}
 
 .admin__main {
   width: calc(100% - 245px);
@@ -147,18 +166,17 @@
   margin-left: 245px;
 }
 
-/* =========================================================
-   TOPBAR
-========================================================= */
-
 .admin__topbar {
+  position: sticky;
+  top: 0;
   height: 82px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 5%;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.96);
   border-bottom: 1px solid #e7dfd8;
+  z-index: 50;
 }
 
 .admin__eyebrow {
@@ -189,6 +207,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid #e1d5e5;
   border-radius: 50%;
   background: #efe7f2;
   color: #3b234c;
@@ -209,19 +228,11 @@
   font-size: 9px;
 }
 
-/* =========================================================
-   CONTENT
-========================================================= */
-
 .admin__content {
   max-width: 1350px;
   margin: 0 auto;
   padding: 42px 5%;
 }
-
-/* =========================================================
-   WELCOME
-========================================================= */
 
 .admin__welcome {
   min-height: 175px;
@@ -235,6 +246,7 @@
   border-radius: 20px;
   background: #3b234c;
   color: #fff;
+  box-shadow: 0 15px 40px rgba(59, 35, 76, 0.12);
 }
 
 .admin__welcome span {
@@ -264,15 +276,12 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.06);
   color: #e7a34b;
   font-size: 42px;
 }
-
-/* =========================================================
-   STATS
-========================================================= */
 
 .admin__stats {
   display: grid;
@@ -290,14 +299,13 @@
   border: 1px solid #e7dfd8;
   border-radius: 16px;
   background: #fff;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: all 0.25s ease;
 }
 
 .admin__stat-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(59, 35, 76, 0.07);
+  transform: translateY(-4px);
+  border-color: #d5c5da;
+  box-shadow: 0 14px 30px rgba(59, 35, 76, 0.09);
 }
 
 .admin__stat-icon {
@@ -324,10 +332,6 @@
   font-size: 23px;
 }
 
-/* =========================================================
-   SECTION HEADER
-========================================================= */
-
 .admin__section-header {
   display: flex;
   align-items: center;
@@ -352,18 +356,23 @@
 }
 
 .admin__section-header button {
-  border: none;
-  background: transparent;
+  padding: 9px 13px;
+  border: 1px solid #e3d9e5;
+  border-radius: 9px;
+  background: #fff;
   color: #3b234c;
   font-family: inherit;
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-/* =========================================================
-   QUICK ACTIONS
-========================================================= */
+.admin__section-header button:hover {
+  border-color: #bda8c4;
+  background: #f7f1f8;
+  transform: translateX(2px);
+}
 
 .admin__quick-actions {
   display: grid;
@@ -381,15 +390,16 @@
   border: 1px solid #e7dfd8;
   border-radius: 15px;
   background: #fff;
+  color: inherit;
   text-align: left;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
 }
 
 .admin__quick-actions button:hover {
   border-color: #b9a2c0;
-  transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(59, 35, 76, 0.06);
+  transform: translateY(-4px);
+  box-shadow: 0 14px 30px rgba(59, 35, 76, 0.08);
 }
 
 .admin__quick-actions button > span {
@@ -403,6 +413,13 @@
   background: #f4edf5;
   color: #3b234c;
   font-size: 18px;
+  transition: all 0.25s ease;
+}
+
+.admin__quick-actions button:hover > span {
+  background: #3b234c;
+  color: #e7a34b;
+  transform: scale(1.06);
 }
 
 .admin__quick-actions strong {
@@ -422,17 +439,20 @@
   margin-left: auto;
   color: #9c8ca0;
   font-size: 16px;
+  transition: transform 0.2s ease;
 }
 
-/* =========================================================
-   PRODUCT OVERVIEW
-========================================================= */
+.admin__quick-actions button:hover b {
+  transform: translateX(4px);
+  color: #3b234c;
+}
 
 .admin__overview {
   padding: 23px;
   border: 1px solid #e7dfd8;
   border-radius: 18px;
   background: #fff;
+  box-shadow: 0 8px 25px rgba(59, 35, 76, 0.03);
 }
 
 .admin__overview .admin__section-header {
@@ -506,10 +526,6 @@
   font-size: 12px;
 }
 
-/* =========================================================
-   PAGE INTRO
-========================================================= */
-
 .admin__page-intro {
   display: flex;
   align-items: flex-end;
@@ -543,24 +559,26 @@
 .admin__primary-button {
   padding: 12px 18px;
   border: none;
-  border-radius: 10px;
+  border-radius: 11px;
   background: #3b234c;
   color: #fff;
   font-family: inherit;
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  box-shadow: 0 7px 18px rgba(59, 35, 76, 0.15);
+  transition: all 0.25s ease;
 }
 
 .admin__primary-button:hover {
   background: #4c2c61;
   transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(59, 35, 76, 0.2);
 }
 
-/* =========================================================
-   EMPTY / COMING SOON
-========================================================= */
+.admin__primary-button:active {
+  transform: translateY(0);
+}
 
 .admin__coming-soon {
   min-height: 350px;
@@ -601,9 +619,10 @@
   line-height: 1.6;
 }
 
-/* =========================================================
-   TABLET
-========================================================= */
+button:focus-visible {
+  outline: 2px solid #e7a34b;
+  outline-offset: 3px;
+}
 
 @media (max-width: 1100px) {
   .admin__sidebar {
@@ -623,10 +642,6 @@
     grid-template-columns: 1fr;
   }
 }
-
-/* =========================================================
-   MOBILE
-========================================================= */
 
 @media (max-width: 700px) {
   .admin {
@@ -718,10 +733,6 @@
     width: 100%;
   }
 }
-
-/* =========================================================
-   SMALL MOBILE
-========================================================= */
 
 @media (max-width: 450px) {
   .admin__stats {

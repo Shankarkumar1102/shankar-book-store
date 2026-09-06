@@ -1,112 +1,230 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import "./Admin.css";
 
-import AdminProducts from "../components/AdminProducts";
+import AdminProducts from "./AdminProducts";
 
 import products from "../data/products";
 import notebooks from "../data/notebooks";
 import pens from "../data/pens";
-import resinFrames from "../data/resinFrames";
-import photoFrames from "../data/photoFrames";
+import schoolOffice from "../data/schoolOffice";
+import artCraft from "../data/artCraft";
+import pencilBoxes from "../data/pencilBoxes";
+import bottlesTiffins from "../data/bottlesTiffins";
 import keychains from "../data/keychains";
+import otherStationery from "../data/otherStationery";
+import giftingItems from "../data/giftingItems";
+import photoFrames from "../data/photoFrames";
+import resinFrames from "../data/resinFrames";
+import trendingProducts from "../data/trendingProducts";
+
+const API_URL =
+  "https://shankar-book-store-2.onrender.com/api/products";
 
 function Admin({ onLogout }) {
-  const [activePage, setActivePage] =
-    useState("dashboard");
+  const [activePage, setActivePage] = useState("dashboard");
+  const [productList, setProductList] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // ==================================================
-  // ALL PRODUCTS
-  // ==================================================
-
-  const allProducts = [
+  const localProducts = [
     ...products,
     ...notebooks,
     ...pens,
-    ...resinFrames,
-    ...photoFrames,
+    ...schoolOffice,
+    ...artCraft,
+    ...pencilBoxes,
+    ...bottlesTiffins,
     ...keychains,
+    ...otherStationery,
+    ...giftingItems,
+    ...photoFrames,
+    ...resinFrames,
+    ...trendingProducts,
   ];
-
-  // ==================================================
-  // STATS
-  // ==================================================
 
   const categories = [
     ...new Set(
-      allProducts
+      productList
         .map((product) => product.category)
         .filter(Boolean)
     ),
   ];
 
-  // ==================================================
-  // PRODUCT LIST
-  // ==================================================
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
 
-  const [productList, setProductList] =
-    useState(allProducts);
+      const response = await fetch(API_URL);
 
-  // ==================================================
-  // DELETE PRODUCT
-  // ==================================================
+      if (!response.ok) {
+        throw new Error("Failed to fetch products");
+      }
 
-  const handleDeleteProduct = (product) => {
+      const data = await response.json();
+
+      if (data.length === 0 && localProducts.length > 0) {
+        const importResponse = await fetch(
+          `${API_URL}/bulk`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(localProducts),
+          }
+        );
+
+        if (!importResponse.ok) {
+          throw new Error(
+            "Failed to import existing products"
+          );
+        }
+
+        const importedProducts =
+          await importResponse.json();
+
+        setProductList(importedProducts);
+      } else {
+        setProductList(data);
+      }
+    } catch (error) {
+      console.error(error);
+
+      alert(
+        "Unable to connect to the server. Please make sure backend is running."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const handleAddProduct = async (newProduct) => {
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...newProduct,
+          price: Number(newProduct.price) || 0,
+          stock: Number(newProduct.stock) || 0,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add product");
+      }
+
+      const savedProduct = await response.json();
+
+      setProductList((currentProducts) => [
+        savedProduct,
+        ...currentProducts,
+      ]);
+
+      alert("Product added successfully.");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to add product.");
+    }
+  };
+
+  const handleEditProduct = async (updatedProduct) => {
+    try {
+      const response = await fetch(
+        `${API_URL}/${updatedProduct._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: updatedProduct.name,
+            category: updatedProduct.category,
+            type: updatedProduct.type,
+            price: Number(updatedProduct.price) || 0,
+            offer: updatedProduct.offer,
+            size: updatedProduct.size,
+            color: updatedProduct.color,
+            description: updatedProduct.description,
+            image: updatedProduct.image,
+            stock: Number(updatedProduct.stock) || 0,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update product");
+      }
+
+      const savedProduct = await response.json();
+
+      setProductList((currentProducts) =>
+        currentProducts.map((product) =>
+          product._id === savedProduct._id
+            ? savedProduct
+            : product
+        )
+      );
+
+      alert("Product updated successfully.");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to update product.");
+    }
+  };
+
+  const handleDeleteProduct = async (product) => {
     const confirmed = window.confirm(
       `Are you sure you want to delete "${product.name}"?`
     );
 
-    if (!confirmed) return;
+    if (!confirmed) {
+      return;
+    }
 
-    setProductList((currentProducts) =>
-      currentProducts.filter(
-        (item) =>
-          !(
-            item.id === product.id &&
-            item.category === product.category
-          )
-      )
-    );
+    try {
+      const response = await fetch(
+        `${API_URL}/${product._id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete product");
+      }
+
+      setProductList((currentProducts) =>
+        currentProducts.filter(
+          (item) => item._id !== product._id
+        )
+      );
+
+      alert("Product deleted successfully.");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to delete product.");
+    }
   };
-
-  // ==================================================
-  // EDIT PRODUCT
-  // ==================================================
-
-  const handleEditProduct = (product) => {
-    alert(
-      `Edit functionality for "${product.name}" will be added next.`
-    );
-  };
-
-  // ==================================================
-  // ADD PRODUCT
-  // ==================================================
-
-  const handleAddProduct = () => {
-    alert(
-      "Add Product functionality will be added next."
-    );
-  };
-
-  // ==================================================
-  // VIEW STORE
-  // ==================================================
 
   const handleViewStore = () => {
     window.location.href = "/";
   };
-
-  // ==================================================
-  // LOGOUT
-  // ==================================================
 
   const handleLogout = () => {
     const confirmed = window.confirm(
       "Are you sure you want to logout?"
     );
 
-    if (!confirmed) return;
+    if (!confirmed) {
+      return;
+    }
 
     if (onLogout) {
       onLogout();
@@ -115,39 +233,17 @@ function Admin({ onLogout }) {
 
   return (
     <div className="admin">
-
-      {/* ==================================================
-          SIDEBAR
-      ================================================== */}
-
       <aside className="admin__sidebar">
-
-        {/* ================= LOGO ================= */}
-
         <div className="admin__brand">
-
-          <div className="admin__brand-mark">
-            S
-          </div>
+          <div className="admin__brand-mark">S</div>
 
           <div>
-            <h1>
-              SHANKAR
-            </h1>
-
-            <span>
-              ADMIN PANEL
-            </span>
+            <h1>SHANKAR</h1>
+            <span>ADMIN PANEL</span>
           </div>
-
         </div>
 
-        {/* ================= NAVIGATION ================= */}
-
         <nav className="admin__nav">
-
-          {/* Dashboard */}
-
           <button
             type="button"
             className={
@@ -155,15 +251,11 @@ function Admin({ onLogout }) {
                 ? "admin__nav-item admin__nav-item--active"
                 : "admin__nav-item"
             }
-            onClick={() =>
-              setActivePage("dashboard")
-            }
+            onClick={() => setActivePage("dashboard")}
           >
             <span>▦</span>
             Dashboard
           </button>
-
-          {/* Products */}
 
           <button
             type="button"
@@ -172,15 +264,11 @@ function Admin({ onLogout }) {
                 ? "admin__nav-item admin__nav-item--active"
                 : "admin__nav-item"
             }
-            onClick={() =>
-              setActivePage("products")
-            }
+            onClick={() => setActivePage("products")}
           >
             <span>▣</span>
             Products
           </button>
-
-          {/* Orders */}
 
           <button
             type="button"
@@ -189,22 +277,14 @@ function Admin({ onLogout }) {
                 ? "admin__nav-item admin__nav-item--active"
                 : "admin__nav-item"
             }
-            onClick={() =>
-              setActivePage("orders")
-            }
+            onClick={() => setActivePage("orders")}
           >
             <span>□</span>
             Orders
           </button>
-
         </nav>
 
-        {/* ================= SIDEBAR BOTTOM ================= */}
-
         <div className="admin__sidebar-bottom">
-
-          {/* View Store */}
-
           <button
             type="button"
             className="admin__store-button"
@@ -213,8 +293,6 @@ function Admin({ onLogout }) {
             ← View Store
           </button>
 
-          {/* Logout */}
-
           <button
             type="button"
             className="admin__logout-button"
@@ -222,296 +300,160 @@ function Admin({ onLogout }) {
           >
             ↪ Logout
           </button>
-
         </div>
-
       </aside>
 
-      {/* ==================================================
-          MAIN
-      ================================================== */}
-
       <main className="admin__main">
-
-        {/* ================= TOPBAR ================= */}
-
         <header className="admin__topbar">
-
           <div>
-
             <span className="admin__eyebrow">
               SHANKAR BOOK STORE
             </span>
 
             <h2>
-              {activePage === "dashboard" &&
-                "Dashboard"}
-
-              {activePage === "products" &&
-                "Products"}
-
-              {activePage === "orders" &&
-                "Orders"}
+              {activePage === "dashboard" && "Dashboard"}
+              {activePage === "products" && "Products"}
+              {activePage === "orders" && "Orders"}
             </h2>
-
           </div>
 
           <div className="admin__profile">
-
-            <div className="admin__profile-avatar">
-              A
-            </div>
+            <div className="admin__profile-avatar">A</div>
 
             <div>
-
-              <strong>
-                Administrator
-              </strong>
-
-              <span>
-                Store Manager
-              </span>
-
+              <strong>Administrator</strong>
+              <span>Store Manager</span>
             </div>
-
           </div>
-
         </header>
 
-        {/* ==================================================
-            DASHBOARD
-        ================================================== */}
-
         {activePage === "dashboard" && (
-
           <section className="admin__content">
-
-            {/* Welcome */}
-
             <div className="admin__welcome">
-
               <div>
+                <span>GOOD DAY 👋</span>
 
-                <span>
-                  GOOD DAY 👋
-                </span>
-
-                <h1>
-                  Welcome to your store.
-                </h1>
+                <h1>Welcome to your store.</h1>
 
                 <p>
                   Manage your products and orders
                   from one place.
                 </p>
-
               </div>
 
               <div className="admin__welcome-icon">
                 ✦
               </div>
-
             </div>
 
-            {/* Stats */}
-
             <div className="admin__stats">
-
               <div className="admin__stat-card">
-
                 <span className="admin__stat-icon">
                   📦
                 </span>
 
                 <div>
-
-                  <p>
-                    Total Products
-                  </p>
-
-                  <strong>
-                    {productList.length}
-                  </strong>
-
+                  <p>Total Products</p>
+                  <strong>{productList.length}</strong>
                 </div>
-
               </div>
 
               <div className="admin__stat-card">
-
                 <span className="admin__stat-icon">
                   🏷️
                 </span>
 
                 <div>
-
-                  <p>
-                    Categories
-                  </p>
-
-                  <strong>
-                    {categories.length}
-                  </strong>
-
+                  <p>Categories</p>
+                  <strong>{categories.length}</strong>
                 </div>
-
               </div>
 
               <div className="admin__stat-card">
-
                 <span className="admin__stat-icon">
                   🛒
                 </span>
 
                 <div>
-
-                  <p>
-                    Orders
-                  </p>
-
-                  <strong>
-                    0
-                  </strong>
-
+                  <p>Orders</p>
+                  <strong>0</strong>
                 </div>
-
               </div>
 
               <div className="admin__stat-card">
-
                 <span className="admin__stat-icon">
                   ₹
                 </span>
 
                 <div>
-
-                  <p>
-                    Revenue
-                  </p>
-
-                  <strong>
-                    ₹0
-                  </strong>
-
+                  <p>Revenue</p>
+                  <strong>₹0</strong>
                 </div>
-
               </div>
-
             </div>
 
-            {/* Quick Actions */}
-
             <div className="admin__section-header">
-
               <div>
-
-                <span>
-                  QUICK ACTIONS
-                </span>
-
-                <h2>
-                  Manage your store
-                </h2>
-
+                <span>QUICK ACTIONS</span>
+                <h2>Manage your store</h2>
               </div>
-
             </div>
 
             <div className="admin__quick-actions">
-
               <button
                 type="button"
-                onClick={() =>
-                  setActivePage("products")
-                }
+                onClick={() => setActivePage("products")}
               >
-
                 <span>＋</span>
 
                 <div>
-
-                  <strong>
-                    Add Product
-                  </strong>
-
+                  <strong>Add Product</strong>
                   <p>
                     Add a new item to your store
                   </p>
-
                 </div>
 
                 <b>→</b>
-
               </button>
 
               <button
                 type="button"
-                onClick={() =>
-                  setActivePage("products")
-                }
+                onClick={() => setActivePage("products")}
               >
-
                 <span>▣</span>
 
                 <div>
-
-                  <strong>
-                    Manage Products
-                  </strong>
-
+                  <strong>Manage Products</strong>
                   <p>
                     Edit or remove existing products
                   </p>
-
                 </div>
 
                 <b>→</b>
-
               </button>
 
               <button
                 type="button"
-                onClick={() =>
-                  setActivePage("orders")
-                }
+                onClick={() => setActivePage("orders")}
               >
-
                 <span>□</span>
 
                 <div>
-
-                  <strong>
-                    View Orders
-                  </strong>
-
+                  <strong>View Orders</strong>
                   <p>
                     Check and manage customer orders
                   </p>
-
                 </div>
 
                 <b>→</b>
-
               </button>
-
             </div>
 
-            {/* Product Overview */}
-
             <div className="admin__overview">
-
               <div className="admin__section-header">
-
                 <div>
-
-                  <span>
-                    INVENTORY
-                  </span>
-
-                  <h2>
-                    Product Overview
-                  </h2>
-
+                  <span>INVENTORY</span>
+                  <h2>Product Overview</h2>
                 </div>
 
                 <button
@@ -522,138 +464,96 @@ function Admin({ onLogout }) {
                 >
                   View all →
                 </button>
-
               </div>
 
-              <div className="admin__overview-list">
+              {loading ? (
+                <div className="admin__coming-soon">
+                  <span>⏳</span>
+                  <h2>Loading Products...</h2>
+                  <p>
+                    Connecting to your database.
+                  </p>
+                </div>
+              ) : (
+                <div className="admin__overview-list">
+                  {productList
+                    .slice(0, 5)
+                    .map((product) => (
+                      <div
+                        className="admin__product-row"
+                        key={product._id}
+                      >
+                        <div className="admin__product-image">
+                          {product.image ? (
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                            />
+                          ) : (
+                            <span>📦</span>
+                          )}
+                        </div>
 
-                {productList
-                  .slice(0, 5)
-                  .map((product) => (
-
-                    <div
-                      className="admin__product-row"
-                      key={`${product.category}-${product.id}`}
-                    >
-
-                      <div className="admin__product-image">
-
-                        {product.image ? (
-
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                          />
-
-                        ) : (
+                        <div className="admin__product-info">
+                          <strong>
+                            {product.name}
+                          </strong>
 
                           <span>
-                            📦
+                            {product.type ||
+                              product.category}
                           </span>
+                        </div>
 
-                        )}
-
-                      </div>
-
-                      <div className="admin__product-info">
-
-                        <strong>
-                          {product.name}
+                        <strong className="admin__product-price">
+                          ₹{product.price}
                         </strong>
-
-                        <span>
-                          {product.type ||
-                            product.category}
-                        </span>
-
                       </div>
-
-                      <strong className="admin__product-price">
-                        ₹{product.price}
-                      </strong>
-
-                    </div>
-
-                  ))}
-
-              </div>
-
+                    ))}
+                </div>
+              )}
             </div>
-
           </section>
-
         )}
 
-        {/* ==================================================
-            PRODUCTS
-        ================================================== */}
-
         {activePage === "products" && (
-
           <section className="admin__content">
-
             <AdminProducts
               products={productList}
               onAddProduct={handleAddProduct}
               onEdit={handleEditProduct}
               onDelete={handleDeleteProduct}
             />
-
           </section>
-
         )}
 
-        {/* ==================================================
-            ORDERS
-        ================================================== */}
-
         {activePage === "orders" && (
-
           <section className="admin__content">
-
             <div className="admin__page-intro">
-
               <div>
+                <span>ORDER MANAGEMENT</span>
 
-                <span>
-                  ORDER MANAGEMENT
-                </span>
-
-                <h1>
-                  Orders
-                </h1>
+                <h1>Orders</h1>
 
                 <p>
                   View and manage customer orders.
                 </p>
-
               </div>
-
             </div>
 
             <div className="admin__coming-soon">
+              <span>🛒</span>
 
-              <span>
-                🛒
-              </span>
-
-              <h2>
-                No Orders Yet
-              </h2>
+              <h2>No Orders Yet</h2>
 
               <p>
                 Customer orders will appear here
                 once the order system is connected.
               </p>
-
             </div>
-
           </section>
-
         )}
-
       </main>
-
     </div>
   );
 }
