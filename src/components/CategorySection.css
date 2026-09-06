@@ -7,7 +7,6 @@
   background-color: var(--color-cream);
 }
 
-
 /* ==================================================
    HEADER
 ================================================== */
@@ -39,12 +38,12 @@
   font-weight: 750;
   cursor: pointer;
   padding: 5px 0;
+  font-family: inherit;
 }
 
 .categories__view-all:hover {
   text-decoration: underline;
 }
-
 
 /* ==================================================
    HORIZONTAL SCROLL
@@ -54,17 +53,14 @@
   width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
-
   scrollbar-width: none;
   -ms-overflow-style: none;
-
   scroll-behavior: smooth;
 }
 
 .categories__scroll::-webkit-scrollbar {
   display: none;
 }
-
 
 /* ==================================================
    CATEGORY LIST
@@ -73,14 +69,23 @@
 .categories__list {
   display: flex;
   align-items: flex-start;
-
   gap: 24px;
-
   width: max-content;
-
   padding: 3px 4px 8px;
 }
 
+/* ==================================================
+   VIEW ALL GRID
+================================================== */
+
+.categories__all-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 22px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
 
 /* ==================================================
    CATEGORY ITEM
@@ -88,25 +93,22 @@
 
 .category-item {
   width: 105px;
-
   display: flex;
   flex-direction: column;
   align-items: center;
-
   gap: 9px;
-
   padding: 0;
-
   border: none;
   background: transparent;
-
   cursor: pointer;
-
   flex-shrink: 0;
-
   font-family: inherit;
 }
 
+.category-item--grid {
+  width: 100%;
+  min-width: 0;
+}
 
 /* ==================================================
    CATEGORY IMAGE
@@ -115,38 +117,32 @@
 .category-item__image {
   width: 92px;
   height: 92px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   overflow: hidden;
-
   border-radius: 50%;
-
   background-color: var(--color-white);
-
   border: 1px solid var(--color-light-border);
-
   box-shadow:
     0 5px 15px rgba(33, 27, 29, 0.07);
-
   transition:
     transform 0.25s ease,
     box-shadow 0.25s ease;
 }
 
+.category-item--grid .category-item__image {
+  width: 115px;
+  height: 115px;
+}
+
 .category-item__image img {
   width: 100%;
   height: 100%;
-
   display: block;
-
   object-fit: cover;
-
   transition: transform 0.3s ease;
 }
-
 
 /* ==================================================
    HOVER
@@ -154,7 +150,6 @@
 
 .category-item:hover .category-item__image {
   transform: translateY(-4px);
-
   box-shadow:
     0 10px 24px rgba(33, 27, 29, 0.13);
 }
@@ -163,33 +158,29 @@
   transform: scale(1.07);
 }
 
-
 /* ==================================================
    CATEGORY NAME
 ================================================== */
 
 .category-item__name {
   display: block;
-
   max-width: 105px;
-
   color: var(--color-ink);
-
   font-size: 11px;
   font-weight: 700;
-
   line-height: 1.3;
-
   text-align: center;
 }
 
+.category-item--grid .category-item__name {
+  max-width: 130px;
+}
 
 /* ==================================================
    TABLET
 ================================================== */
 
 @media (max-width: 900px) {
-
   .categories {
     padding: 25px 4% 22px;
   }
@@ -207,15 +198,31 @@
     height: 80px;
   }
 
-}
+  /* View All Grid */
+  .categories__all-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
 
+  .category-item--grid {
+    width: 100%;
+  }
+
+  .category-item--grid .category-item__image {
+    width: 100px;
+    height: 100px;
+  }
+
+  .category-item--grid .category-item__name {
+    max-width: 115px;
+  }
+}
 
 /* ==================================================
    MOBILE
 ================================================== */
 
 @media (max-width: 600px) {
-
   .categories {
     padding: 18px 4% 18px;
   }
@@ -233,6 +240,7 @@
     font-size: 10px;
   }
 
+  /* Horizontal category list */
   .categories__list {
     gap: 15px;
     padding-bottom: 5px;
@@ -250,20 +258,38 @@
 
   .category-item__name {
     max-width: 70px;
-
     font-size: 9px;
     line-height: 1.2;
   }
 
-}
+  /* View All Grid */
+  .categories__all-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 12px;
+  }
 
+  .category-item--grid {
+    width: 100%;
+    gap: 7px;
+  }
+
+  .category-item--grid .category-item__image {
+    width: 75px;
+    height: 75px;
+  }
+
+  .category-item--grid .category-item__name {
+    max-width: 100px;
+    font-size: 9px;
+    line-height: 1.2;
+  }
+}
 
 /* ==================================================
    SMALL MOBILE
 ================================================== */
 
 @media (max-width: 380px) {
-
   .categories {
     padding-left: 3.5%;
     padding-right: 3.5%;
@@ -287,4 +313,18 @@
     font-size: 8.5px;
   }
 
+  /* View All Grid */
+  .categories__all-grid {
+    gap: 15px 9px;
+  }
+
+  .category-item--grid .category-item__image {
+    width: 68px;
+    height: 68px;
+  }
+
+  .category-item--grid .category-item__name {
+    max-width: 90px;
+    font-size: 8.5px;
+  }
 }
