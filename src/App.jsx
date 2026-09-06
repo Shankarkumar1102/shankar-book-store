@@ -39,24 +39,19 @@ function App() {
   const [productsLoading, setProductsLoading] = useState(true);
 
   const [selectedCategory, setSelectedCategory] = useState(null);
-
   const [searchTerm, setSearchTerm] = useState("");
-
   const [selectedProductSection, setSelectedProductSection] =
     useState(null);
 
   const [isCartOpen, setIsCartOpen] = useState(false);
-
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-
   const [orderConfirmation, setOrderConfirmation] = useState(null);
 
   const [adminLogin, setAdminLogin] = useState(false);
-
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
 
   // =========================================================
-  // LOAD PRODUCTS FROM MONGODB / RENDER
+  // LOAD PRODUCTS
   // =========================================================
 
   useEffect(() => {
@@ -73,7 +68,6 @@ function App() {
         setDbProducts(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Product API error:", error);
-
         setDbProducts([]);
       } finally {
         setProductsLoading(false);
@@ -84,7 +78,7 @@ function App() {
   }, []);
 
   // =========================================================
-  // OLD LOCAL PRODUCTS
+  // LOCAL PRODUCTS
   // =========================================================
 
   const localProducts = [
@@ -103,17 +97,13 @@ function App() {
   ];
 
   // =========================================================
-  // PRODUCTS USED BY WEBSITE
-  // =========================================================
-  //
-  // If MongoDB has products, use MongoDB products.
-  // Otherwise use existing local products.
-  //
-  // This keeps the website working while we migrate everything.
+  // WEBSITE PRODUCTS
   // =========================================================
 
   const websiteProducts =
     dbProducts.length > 0 ? dbProducts : localProducts;
+
+  const allProducts = websiteProducts;
 
   // =========================================================
   // CATEGORY PRODUCTS
@@ -143,12 +133,6 @@ function App() {
   };
 
   // =========================================================
-  // ALL PRODUCTS
-  // =========================================================
-
-  const allProducts = websiteProducts;
-
-  // =========================================================
   // TRENDING PRODUCTS
   // =========================================================
 
@@ -176,16 +160,192 @@ function App() {
       : trendingProducts;
 
   // =========================================================
-  // CART
+  // HOME
+  // =========================================================
+
+  const goHome = (addHistory = true) => {
+    if (addHistory) {
+      window.history.pushState(
+        { page: "home" },
+        "",
+        window.location.pathname
+      );
+    }
+
+    setSelectedCategory(null);
+    setSelectedProductSection(null);
+    setSearchTerm("");
+    setIsCartOpen(false);
+    setIsCheckoutOpen(false);
+    setOrderConfirmation(null);
+    setAdminLogin(false);
+    setIsAdminLoggedIn(false);
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  // =========================================================
+  // BROWSER HISTORY
+  // =========================================================
+
+  useEffect(() => {
+    const handlePopState = (event) => {
+      const page = event.state?.page;
+
+      // HOME
+      if (!page || page === "home") {
+        setSelectedCategory(null);
+        setSelectedProductSection(null);
+        setSearchTerm("");
+        setIsCartOpen(false);
+        setIsCheckoutOpen(false);
+        setOrderConfirmation(null);
+        setAdminLogin(false);
+        setIsAdminLoggedIn(false);
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+
+        return;
+      }
+
+      // CATEGORY
+      if (page === "category") {
+        setSelectedCategory(event.state.category);
+        setSelectedProductSection(null);
+        setSearchTerm("");
+        setIsCartOpen(false);
+        setIsCheckoutOpen(false);
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+
+        return;
+      }
+
+      // SEARCH
+      if (page === "search") {
+        setSearchTerm(event.state.searchTerm || "");
+        setSelectedCategory(null);
+        setSelectedProductSection(null);
+        setIsCartOpen(false);
+        setIsCheckoutOpen(false);
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+
+        return;
+      }
+
+      // TRENDING / PRODUCT SECTION
+      if (page === "product-section") {
+        setSelectedProductSection(
+          event.state.productSection
+        );
+        setSelectedCategory(null);
+        setSearchTerm("");
+        setIsCartOpen(false);
+        setIsCheckoutOpen(false);
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+
+        return;
+      }
+
+      // CART
+      if (page === "cart") {
+        setIsCartOpen(true);
+        setIsCheckoutOpen(false);
+        return;
+      }
+
+      // CHECKOUT
+      if (page === "checkout") {
+        setIsCartOpen(false);
+        setIsCheckoutOpen(true);
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+
+        return;
+      }
+
+      // ADMIN LOGIN
+      if (page === "admin-login") {
+        setAdminLogin(true);
+        setIsAdminLoggedIn(false);
+        setSelectedCategory(null);
+        setSelectedProductSection(null);
+        setSearchTerm("");
+        setIsCartOpen(false);
+        setIsCheckoutOpen(false);
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+
+        return;
+      }
+
+      // ADMIN
+      if (page === "admin") {
+        setIsAdminLoggedIn(true);
+        setAdminLogin(false);
+        setSelectedCategory(null);
+        setSelectedProductSection(null);
+        setSearchTerm("");
+        setIsCartOpen(false);
+        setIsCheckoutOpen(false);
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+      }
+    };
+
+    window.addEventListener(
+      "popstate",
+      handlePopState
+    );
+
+    return () => {
+      window.removeEventListener(
+        "popstate",
+        handlePopState
+      );
+    };
+  }, []);
+
+  // =========================================================
+  // ADD TO CART
   // =========================================================
 
   const addToCart = (product) => {
     setCart((currentCart) => {
-      const productId = product._id || product.id;
+      const productId =
+        product._id || product.id;
 
-      const existingProduct = currentCart.find(
-        (item) => (item._id || item.id) === productId
-      );
+      const existingProduct =
+        currentCart.find(
+          (item) =>
+            (item._id || item.id) === productId
+        );
 
       if (existingProduct) {
         return currentCart.map((item) =>
@@ -214,15 +374,28 @@ function App() {
   // =========================================================
 
   const openCategory = (category) => {
-    const products = getCategoryProducts(category);
+    const products =
+      getCategoryProducts(category);
 
-    setSelectedCategory({
+    const categoryData = {
       name: category,
       products,
-    });
+    };
 
+    setSelectedCategory(categoryData);
     setSelectedProductSection(null);
     setSearchTerm("");
+    setIsCartOpen(false);
+    setIsCheckoutOpen(false);
+
+    window.history.pushState(
+      {
+        page: "category",
+        category: categoryData,
+      },
+      "",
+      window.location.pathname
+    );
 
     window.scrollTo({
       top: 0,
@@ -231,12 +404,7 @@ function App() {
   };
 
   const clearCategory = () => {
-    setSelectedCategory(null);
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    window.history.back();
   };
 
   // =========================================================
@@ -249,6 +417,17 @@ function App() {
     setSelectedCategory(null);
     setSelectedProductSection(null);
 
+    if (value.trim()) {
+      window.history.replaceState(
+        {
+          page: "search",
+          searchTerm: value,
+        },
+        "",
+        window.location.pathname
+      );
+    }
+
     window.scrollTo({
       top: 0,
       behavior: "smooth",
@@ -256,12 +435,7 @@ function App() {
   };
 
   const clearSearch = () => {
-    setSearchTerm("");
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    window.history.back();
   };
 
   // =========================================================
@@ -269,15 +443,30 @@ function App() {
   // =========================================================
 
   const openTrendingProducts = () => {
-    setSelectedProductSection({
+    const productSection = {
       title: "Trending Products",
       eyebrow: "WHAT'S POPULAR",
       products: websiteTrendingProducts,
       isTrending: true,
-    });
+    };
+
+    setSelectedProductSection(
+      productSection
+    );
 
     setSelectedCategory(null);
     setSearchTerm("");
+    setIsCartOpen(false);
+    setIsCheckoutOpen(false);
+
+    window.history.pushState(
+      {
+        page: "product-section",
+        productSection,
+      },
+      "",
+      window.location.pathname
+    );
 
     window.scrollTo({
       top: 0,
@@ -286,30 +475,45 @@ function App() {
   };
 
   const clearProductSection = () => {
-    setSelectedProductSection(null);
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    window.history.back();
   };
 
   // =========================================================
-  // CART / CHECKOUT
+  // CART
   // =========================================================
 
   const openCart = () => {
     setIsCartOpen(true);
     setIsCheckoutOpen(false);
+
+    window.history.pushState(
+      { page: "cart" },
+      "",
+      window.location.pathname
+    );
   };
 
   const closeCart = () => {
-    setIsCartOpen(false);
+    if (window.history.state?.page === "cart") {
+      window.history.back();
+    } else {
+      setIsCartOpen(false);
+    }
   };
+
+  // =========================================================
+  // CHECKOUT
+  // =========================================================
 
   const openCheckout = () => {
     setIsCartOpen(false);
     setIsCheckoutOpen(true);
+
+    window.history.pushState(
+      { page: "checkout" },
+      "",
+      window.location.pathname
+    );
 
     window.scrollTo({
       top: 0,
@@ -320,6 +524,8 @@ function App() {
   const backToCart = () => {
     setIsCheckoutOpen(false);
     setIsCartOpen(true);
+
+    window.history.back();
   };
 
   // =========================================================
@@ -335,7 +541,9 @@ function App() {
       0
     );
 
-    const area = String(customer.area || "")
+    const area = String(
+      customer.area || ""
+    )
       .toLowerCase()
       .trim();
 
@@ -344,9 +552,13 @@ function App() {
     if (subtotal < 99) {
       if (area.includes("mahilong")) {
         deliveryCharge = 10;
-      } else if (area.includes("tatisilwai")) {
+      } else if (
+        area.includes("tatisilwai")
+      ) {
         deliveryCharge = 20;
-      } else if (area.includes("namkum")) {
+      } else if (
+        area.includes("namkum")
+      ) {
         deliveryCharge = 30;
       }
     }
@@ -355,7 +567,10 @@ function App() {
       subtotal + deliveryCharge;
 
     const newOrderId =
-      "SB" + Date.now().toString().slice(-6);
+      "SB" +
+      Date.now()
+        .toString()
+        .slice(-6);
 
     const orderItems = cart
       .map(
@@ -426,6 +641,12 @@ Thank you!
 
     setIsCheckoutOpen(false);
 
+    window.history.pushState(
+      { page: "order-confirmation" },
+      "",
+      window.location.pathname
+    );
+
     window.scrollTo({
       top: 0,
       behavior: "smooth",
@@ -437,22 +658,11 @@ Thank you!
   // =========================================================
 
   const continueShopping = () => {
-    setOrderConfirmation(null);
-
-    setSelectedCategory(null);
-
-    setSelectedProductSection(null);
-
-    setSearchTerm("");
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    goHome(true);
   };
 
   // =========================================================
-  // ADMIN
+  // ADMIN LOGIN
   // =========================================================
 
   const openAdminLogin = () => {
@@ -465,29 +675,11 @@ Thank you!
     setIsCartOpen(false);
     setIsCheckoutOpen(false);
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
-
-  const handleAdminLogin = () => {
-    setIsAdminLoggedIn(true);
-    setAdminLogin(false);
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
-
-  const handleAdminLogout = () => {
-    setIsAdminLoggedIn(false);
-    setAdminLogin(false);
-
-    setSelectedCategory(null);
-    setSelectedProductSection(null);
-    setSearchTerm("");
+    window.history.pushState(
+      { page: "admin-login" },
+      "",
+      window.location.pathname
+    );
 
     window.scrollTo({
       top: 0,
@@ -496,7 +688,53 @@ Thank you!
   };
 
   // =========================================================
-  // ADMIN LOGIN PAGE
+  // ADMIN LOGIN SUCCESS
+  // =========================================================
+
+  const handleAdminLogin = () => {
+    setIsAdminLoggedIn(true);
+    setAdminLogin(false);
+
+    window.history.pushState(
+      { page: "admin" },
+      "",
+      window.location.pathname
+    );
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  // =========================================================
+  // ADMIN LOGOUT
+  // =========================================================
+
+  const handleAdminLogout = () => {
+    setIsAdminLoggedIn(false);
+    setAdminLogin(false);
+
+    setSelectedCategory(null);
+    setSelectedProductSection(null);
+    setSearchTerm("");
+    setIsCartOpen(false);
+    setIsCheckoutOpen(false);
+
+    window.history.pushState(
+      { page: "home" },
+      "",
+      window.location.pathname
+    );
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  // =========================================================
+  // ADMIN
   // =========================================================
 
   if (isAdminLoggedIn) {
@@ -522,7 +760,9 @@ Thank you!
   if (orderConfirmation) {
     return (
       <OrderConfirmation
-        customer={orderConfirmation.customer}
+        customer={
+          orderConfirmation.customer
+        }
         cart={orderConfirmation.cart}
         totalAmount={
           orderConfirmation.totalAmount
@@ -563,6 +803,7 @@ Thank you!
           onCartClick={openCart}
           onSearch={handleSearch}
           searchTerm={searchTerm}
+          onHomeClick={() => goHome(true)}
         />
 
         <SearchResults
@@ -595,13 +836,20 @@ Thank you!
           onCartClick={openCart}
           onSearch={handleSearch}
           searchTerm={searchTerm}
+          onHomeClick={() => goHome(true)}
         />
 
         <CategoryResults
-          category={selectedCategory.name}
-          products={selectedCategory.products}
+          category={
+            selectedCategory.name
+          }
+          products={
+            selectedCategory.products
+          }
           addToCart={addToCart}
-          onClearCategory={clearCategory}
+          onClearCategory={
+            clearCategory
+          }
         />
 
         <Cart
@@ -627,6 +875,7 @@ Thank you!
           onCartClick={openCart}
           onSearch={handleSearch}
           searchTerm={searchTerm}
+          onHomeClick={() => goHome(true)}
         />
 
         <CategoryResults
@@ -664,6 +913,7 @@ Thank you!
         onCartClick={openCart}
         onSearch={handleSearch}
         searchTerm={searchTerm}
+        onHomeClick={() => goHome(true)}
       />
 
       <Hero />
