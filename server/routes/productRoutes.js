@@ -3,6 +3,10 @@ const Product = require("../models/Product");
 
 const router = express.Router();
 
+// =========================================================
+// GET ALL PRODUCTS
+// =========================================================
+
 router.get("/", async (req, res) => {
   try {
     const products = await Product.find().sort({
@@ -18,18 +22,42 @@ router.get("/", async (req, res) => {
   }
 });
 
+// =========================================================
+// ADD PRODUCT
+// =========================================================
+
 router.post("/", async (req, res) => {
   try {
     const product = await Product.create({
+      legacyId: req.body.legacyId || "",
+
       name: req.body.name,
+
       category: req.body.category,
+
       type: req.body.type || "",
+
       price: Number(req.body.price) || 0,
+
       offer: req.body.offer || "",
+
       size: req.body.size || "",
+
       color: req.body.color || "",
+
+      pages:
+        req.body.pages !== undefined &&
+        req.body.pages !== null &&
+        req.body.pages !== ""
+          ? Number(req.body.pages)
+          : null,
+
+      pattern: req.body.pattern || "",
+
       description: req.body.description || "",
+
       image: req.body.image || "",
+
       stock: Number(req.body.stock) || 0,
     });
 
@@ -41,6 +69,10 @@ router.post("/", async (req, res) => {
     });
   }
 });
+
+// =========================================================
+// BULK IMPORT
+// =========================================================
 
 router.post("/bulk", async (req, res) => {
   try {
@@ -54,56 +86,123 @@ router.post("/bulk", async (req, res) => {
       });
     }
 
-    const formattedProducts = products.map((product) => ({
-      name: product.name || "Unnamed Product",
-      category:
-        product.category ||
-        product.type ||
-        "Other Stationery",
-      type: product.type || "",
-      price: Number(product.price) || 0,
-      offer: product.offer || "",
-      size: product.size || "",
-      color: product.color || "",
-      description: product.description || "",
-      image: product.image || "",
-      stock: Number(product.stock) || 0,
-    }));
+    const formattedProducts = products.map(
+      (product) => ({
+        legacyId: product.legacyId || product.id || "",
 
-    const savedProducts = await Product.insertMany(
-      formattedProducts
+        name:
+          product.name ||
+          "Unnamed Product",
+
+        category:
+          product.category ||
+          product.type ||
+          "Other Stationery",
+
+        type: product.type || "",
+
+        price:
+          Number(product.price) || 0,
+
+        offer: product.offer || "",
+
+        size: product.size || "",
+
+        color: product.color || "",
+
+        pages:
+          product.pages !== undefined &&
+          product.pages !== null &&
+          product.pages !== ""
+            ? Number(product.pages)
+            : null,
+
+        pattern:
+          product.pattern || "",
+
+        description:
+          product.description || "",
+
+        image:
+          product.image || "",
+
+        stock:
+          Number(product.stock) || 0,
+      })
     );
+
+    const savedProducts =
+      await Product.insertMany(
+        formattedProducts
+      );
 
     res.status(201).json(savedProducts);
   } catch (error) {
     res.status(400).json({
-      message: "Failed to import products",
+      message:
+        "Failed to import products",
       error: error.message,
     });
   }
 });
 
+// =========================================================
+// UPDATE PRODUCT
+// =========================================================
+
 router.put("/:id", async (req, res) => {
   try {
-    const product = await Product.findByIdAndUpdate(
-      req.params.id,
-      {
-        name: req.body.name,
-        category: req.body.category,
-        type: req.body.type || "",
-        price: Number(req.body.price) || 0,
-        offer: req.body.offer || "",
-        size: req.body.size || "",
-        color: req.body.color || "",
-        description: req.body.description || "",
-        image: req.body.image || "",
-        stock: Number(req.body.stock) || 0,
-      },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    const product =
+      await Product.findByIdAndUpdate(
+        req.params.id,
+        {
+          legacyId:
+            req.body.legacyId || "",
+
+          name: req.body.name,
+
+          category:
+            req.body.category,
+
+          type:
+            req.body.type || "",
+
+          price:
+            Number(req.body.price) || 0,
+
+          offer:
+            req.body.offer || "",
+
+          size:
+            req.body.size || "",
+
+          color:
+            req.body.color || "",
+
+          pages:
+            req.body.pages !== undefined &&
+            req.body.pages !== null &&
+            req.body.pages !== ""
+              ? Number(req.body.pages)
+              : null,
+
+          pattern:
+            req.body.pattern || "",
+
+          description:
+            req.body.description || "",
+
+          image:
+            req.body.image || "",
+
+          stock:
+            Number(req.body.stock) || 0,
+        },
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
 
     if (!product) {
       return res.status(404).json({
@@ -114,16 +213,23 @@ router.put("/:id", async (req, res) => {
     res.json(product);
   } catch (error) {
     res.status(400).json({
-      message: "Failed to update product",
+      message:
+        "Failed to update product",
       error: error.message,
     });
   }
 });
 
+// =========================================================
+// DELETE PRODUCT
+// =========================================================
+
 router.delete("/:id", async (req, res) => {
   try {
     const product =
-      await Product.findByIdAndDelete(req.params.id);
+      await Product.findByIdAndDelete(
+        req.params.id
+      );
 
     if (!product) {
       return res.status(404).json({
@@ -132,11 +238,13 @@ router.delete("/:id", async (req, res) => {
     }
 
     res.json({
-      message: "Product deleted successfully",
+      message:
+        "Product deleted successfully",
     });
   } catch (error) {
     res.status(400).json({
-      message: "Failed to delete product",
+      message:
+        "Failed to delete product",
       error: error.message,
     });
   }

@@ -1,0 +1,355 @@
+const mongoose = require("mongoose");
+const path = require("path");
+
+require("dotenv").config({
+  path: path.join(__dirname, ".env"),
+});
+
+const Product = require("./models/Product");
+
+// =========================================================
+// NOTEBOOK DATA
+// =========================================================
+
+const notebooks = [
+  {
+    id: "nb-01",
+    name: "Hindi Notebook",
+    price: 10,
+    pages: 44,
+    type: "DC Copy",
+    pattern: "Single Line",
+    category: "Notebooks",
+    image: "/images/notebook-nb-01.jpg",
+  },
+  {
+    id: "nb-02",
+    name: "English Notebook",
+    price: 10,
+    pages: 44,
+    type: "DC Copy",
+    pattern: "4 Line",
+    category: "Notebooks",
+    image: "/images/notebook-nb-02.jpg",
+  },
+  {
+    id: "nb-03",
+    name: "Maths Notebook",
+    price: 10,
+    pages: 44,
+    type: "DC Copy",
+    pattern: "Box",
+    category: "Notebooks",
+    image: "/images/notebook-nb-03.jpg",
+  },
+  {
+    id: "nb-04",
+    name: "Hindi Notebook",
+    price: 20,
+    pages: 42,
+    type: "DC Copy",
+    pattern: "Hindi",
+    category: "Notebooks",
+    image: "/images/notebook-nb-04.jpg",
+  },
+  {
+    id: "nb-05",
+    name: "English Notebook",
+    price: 20,
+    pages: 42,
+    type: "DC Copy",
+    pattern: "English",
+    category: "Notebooks",
+    image: "/images/notebook-nb-05.jpg",
+  },
+  {
+    id: "nb-06",
+    name: "Maths Notebook",
+    price: 20,
+    pages: 42,
+    type: "DC Copy",
+    pattern: "Maths",
+    category: "Notebooks",
+    image: "/images/notebook-nb-06.jpg",
+  },
+  {
+    id: "nb-07",
+    name: "Interleaf Rough Copy",
+    price: 20,
+    pages: null,
+    type: "DC Copy",
+    pattern: "Rough",
+    category: "Notebooks",
+    image: "/images/notebook-nb-07.jpg",
+  },
+  {
+    id: "nb-08",
+    name: "A4 Notebook",
+    price: 20,
+    pages: 60,
+    type: "A4",
+    pattern: "Notebook",
+    category: "Notebooks",
+    image: "/images/notebook-nb-08.jpg",
+  },
+  {
+    id: "nb-09",
+    name: "Hindi Notebook",
+    price: 45,
+    pages: 172,
+    type: "DC Copy",
+    pattern: "Single Line",
+    category: "Notebooks",
+    image: "/images/notebook-nb-09.jpg",
+  },
+  {
+    id: "nb-10",
+    name: "English Notebook",
+    price: 45,
+    pages: 172,
+    type: "DC Copy",
+    pattern: "43 Line",
+    category: "Notebooks",
+    image: "/images/notebook-nb-10.jpg",
+  },
+  {
+    id: "nb-11",
+    name: "Maths Notebook",
+    price: 45,
+    pages: 172,
+    type: "DC Copy",
+    pattern: "Maths",
+    category: "Notebooks",
+    image: "/images/notebook-nb-11.jpg",
+  },
+  {
+    id: "nb-12",
+    name: "Interleaf Rough Copy",
+    price: 45,
+    pages: 172,
+    type: "DC Copy",
+    pattern: "Rough",
+    category: "Notebooks",
+    image: "/images/notebook-nb-12.jpg",
+  },
+  {
+    id: "nb-13",
+    name: "A4 Notebook",
+    price: 55,
+    pages: 140,
+    type: "A4",
+    pattern: "Notebook",
+    category: "Notebooks",
+    image: "/images/notebook-nb-13.jpg",
+  },
+  {
+    id: "nb-14",
+    name: "A4 Notebook",
+    price: 60,
+    pages: 172,
+    type: "A4",
+    pattern: "Notebook",
+    category: "Notebooks",
+    image: "/images/notebook-nb-14.jpg",
+  },
+  {
+    id: "nb-15",
+    name: "A4 Notebook",
+    price: 65,
+    pages: 192,
+    type: "A4",
+    pattern: "Notebook",
+    category: "Notebooks",
+    image: "/images/notebook-nb-15.jpg",
+  },
+  {
+    id: "nb-16",
+    name: "Rough Copy",
+    price: 70,
+    pages: 172,
+    type: "A4",
+    pattern: "Rough",
+    category: "Notebooks",
+    image: "/images/notebook-nb-16.jpg",
+  },
+  {
+    id: "nb-17",
+    name: "Spiral Notebook",
+    price: 90,
+    pages: 172,
+    type: "A4",
+    pattern: "Spiral",
+    category: "Notebooks",
+    image: "/images/notebook-nb-17.jpg",
+  },
+  {
+    id: "nb-18",
+    name: "Spiral Notebook",
+    price: 140,
+    pages: 200,
+    type: "A4",
+    pattern: "Spiral",
+    category: "Notebooks",
+    image: "/images/notebook-nb-18.jpg",
+  },
+  {
+    id: "nb-19",
+    name: "Spiral Notebook",
+    price: 180,
+    pages: 400,
+    type: "A4",
+    pattern: "Spiral",
+    category: "Notebooks",
+    image: "/images/notebook-nb-19.jpg",
+  },
+  {
+    id: "nb-20",
+    name: "A4 Notebook",
+    price: 30,
+    pages: 92,
+    type: "A4",
+    pattern: "Spiral",
+    category: "Notebooks",
+    image: "/images/notebook-nb-20.jpg",
+  },
+  {
+    id: "nb-21",
+    name: "Blank Page Notebook",
+    price: 45,
+    pages: 172,
+    type: "DC Copy",
+    pattern: "Blank Pages",
+    category: "Notebooks",
+    image: "/images/notebook-nb-21.jpg",
+  },
+  {
+    id: "nb-22",
+    name: "Blank A4 Notebook",
+    price: 65,
+    pages: 192,
+    type: "A4",
+    pattern: "Spiral",
+    category: "Notebooks",
+    image: "/images/notebook-nb-22.jpg",
+  },
+  {
+    id: "nb-23",
+    name: "Blank A4 Notebook",
+    price: 130,
+    pages: 300,
+    type: "A4",
+    pattern: "Spiral",
+    category: "Notebooks",
+    image: "/images/notebook-nb-23.jpg",
+  },
+  {
+    id: "nb-24",
+    name: "Blank A4 Notebook",
+    price: 180,
+    pages: 400,
+    type: "A4",
+    pattern: "Spiral",
+    category: "Notebooks",
+    image: "/images/notebook-nb-24.jpg",
+  },
+  {
+    id: "nb-25",
+    name: "A4 Register Notebook",
+    price: 140,
+    pages: 144,
+    type: "A4",
+    pattern: "Register",
+    category: "Notebooks",
+    image: "/images/notebook-nb-25.jpg",
+  },
+  {
+    id: "nb-26",
+    name: "A4 Register Notebook",
+    price: 180,
+    pages: 240,
+    type: "A4",
+    pattern: "Register",
+    category: "Notebooks",
+    image: "/images/notebook-nb-26.jpg",
+  },
+];
+
+// =========================================================
+// UPDATE EXISTING NOTEBOOKS
+// =========================================================
+
+async function updateNotebookDetails() {
+  try {
+    console.log("Connecting to MongoDB...");
+
+    await mongoose.connect(process.env.MONGODB_URI);
+
+    console.log("MongoDB connected successfully.");
+    console.log("");
+    console.log("Updating notebook details...");
+    console.log("");
+
+    let updated = 0;
+    let notFound = 0;
+
+    for (const notebook of notebooks) {
+      const product = await Product.findOne({
+        image: notebook.image,
+      });
+
+      if (!product) {
+        console.log(
+          `NOT FOUND: ${notebook.id} - ${notebook.image}`
+        );
+
+        notFound++;
+        continue;
+      }
+
+      await Product.updateOne(
+        {
+          _id: product._id,
+        },
+        {
+          $set: {
+            legacyId: notebook.id,
+            pages: notebook.pages,
+            pattern: notebook.pattern,
+          },
+        }
+      );
+
+      console.log(
+        `UPDATED: ${notebook.id} - ${notebook.name}`
+      );
+
+      updated++;
+    }
+
+    console.log("");
+    console.log("================================");
+    console.log("NOTEBOOK UPDATE COMPLETED");
+    console.log("================================");
+    console.log(
+      `Total notebooks: ${notebooks.length}`
+    );
+    console.log(`Updated: ${updated}`);
+    console.log(`Not found: ${notFound}`);
+    console.log("================================");
+
+    await mongoose.disconnect();
+
+    console.log("");
+    console.log("MongoDB connection closed.");
+  } catch (error) {
+    console.error("");
+    console.error("UPDATE FAILED:");
+    console.error(error);
+
+    await mongoose.disconnect().catch(() => {});
+
+    process.exit(1);
+  }
+}
+
+updateNotebookDetails();
