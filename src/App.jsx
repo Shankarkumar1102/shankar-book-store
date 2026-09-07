@@ -59,8 +59,6 @@ function App() {
 
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  const [cartToast, setCartToast] = useState(null);
-
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   const [orderConfirmation, setOrderConfirmation] =
@@ -143,238 +141,70 @@ function App() {
       .toLowerCase();
 
   /* =====================================================
-     NOTEBOOK SUBJECT CHECK
-
-     Hindi / English / Maths notebooks with same
-     price/pages/type/size should become one product.
-  ===================================================== */
-
-  const isSubjectNotebook = (product) => {
-    const category = normalizeValue(
-      product?.category
-    );
-
-    const name = normalizeValue(
-      product?.name
-    );
-
-    return (
-      category === "notebooks" &&
-      (
-        name === "hindi notebook" ||
-        name === "english notebook" ||
-        name === "maths notebook"
-      )
-    );
-  };
-
-  /* =====================================================
-     PRODUCT GROUP KEY
-  ===================================================== */
-
-  const getProductGroupKey = (product) => {
-    const category = normalizeValue(
-      product?.category
-    );
-
-    const type = normalizeValue(
-      product?.type
-    );
-
-    const size = normalizeValue(
-      product?.size
-    );
-
-    const price = Number(
-      product?.price || 0
-    );
-
-    /*
-      SPECIAL NOTEBOOK GROUP
-
-      Example:
-
-      Hindi Notebook ₹10
-      English Notebook ₹10
-      Maths Notebook ₹10
-
-      becomes:
-
-      Notebook ₹10
-    */
-
-    if (isSubjectNotebook(product)) {
-      return [
-        category,
-        "subject-notebook",
-        price,
-        size,
-        type,
-        product?.pages || "",
-      ].join("|");
-    }
-
-    /*
-      GENERIC GROUP
-
-      Same:
-      category
-      name
-      price
-      size
-      type
-
-      = one product card
-    */
-
-    const name = normalizeValue(
-      product?.name
-    );
-
-    return [
-      category,
-      name,
-      price,
-      size,
-      type,
-    ].join("|");
-  };
-
-  /* =====================================================
-     GROUP PRODUCTS
-  ===================================================== */
-
-  const groupProducts = (products) => {
-    const groups = new Map();
-
-    products.forEach((product) => {
-      const key =
-        getProductGroupKey(product);
-
-      if (!groups.has(key)) {
-        groups.set(key, []);
-      }
-
-      groups.get(key).push(product);
-    });
-
-    return Array.from(
-      groups.values()
-    ).map((variants) => {
-      const mainProduct = variants[0];
-
-      const subjectNotebookGroup =
-        variants.length > 1 &&
-        variants.every((variant) =>
-          isSubjectNotebook(variant)
-        );
-
-      return {
-        ...mainProduct,
-
-        name: subjectNotebookGroup
-          ? "Notebook"
-          : mainProduct.name,
-
-        variants,
-
-        variantCount:
-          variants.length,
-
-        hasVariants:
-          variants.length > 1,
-      };
-    });
-  };
-
-  /* =====================================================
-     GROUPED PRODUCTS
-  ===================================================== */
-
-  const groupedProducts = useMemo(
-    () => groupProducts(allProducts),
-    [allProducts]
-  );
-
-  /* =====================================================
      CATEGORY PRODUCTS
+
+     NO GROUPING
+     EVERY PRODUCT IS SEPARATE
   ===================================================== */
 
-  const getCategoryProducts = (
-    category
-  ) => {
+  const getCategoryProducts = (category) => {
     const selectedCategoryName =
       normalizeValue(category);
 
     const filtered =
-      websiteProducts.filter(
-        (product) => {
-          const productCategory =
-            normalizeValue(
-              product?.category
-            );
-
-          const productType =
-            normalizeValue(
-              product?.type
-            );
-
-          return (
-            productCategory ===
-              selectedCategoryName ||
-            productType ===
-              selectedCategoryName
+      websiteProducts.filter((product) => {
+        const productCategory =
+          normalizeValue(
+            product?.category
           );
-        }
-      );
 
-    return groupProducts(filtered);
+        const productType =
+          normalizeValue(product?.type);
+
+        return (
+          productCategory ===
+            selectedCategoryName ||
+          productType ===
+            selectedCategoryName
+        );
+      });
+
+    return filtered;
   };
 
   /* =====================================================
      TRENDING PRODUCTS
+
+     NO GROUPING
   ===================================================== */
 
   const websiteTrendingProducts =
     dbProducts.length > 0
-      ? dbProducts.filter(
-          (product) => {
-            const category =
-              normalizeValue(
-                product?.category
-              );
-
-            const type =
-              normalizeValue(
-                product?.type
-              );
-
-            const name =
-              normalizeValue(
-                product?.name
-              );
-
-            return (
-              category.includes("trending") ||
-              type.includes("trending") ||
-              name.includes("trending")
+      ? dbProducts.filter((product) => {
+          const category =
+            normalizeValue(
+              product?.category
             );
-          }
-        )
-      : trendingProducts;
 
-  const groupedTrendingProducts =
-    groupProducts(
-      websiteTrendingProducts
-    );
+          const type =
+            normalizeValue(product?.type);
+
+          const name =
+            normalizeValue(product?.name);
+
+          return (
+            category.includes("trending") ||
+            type.includes("trending") ||
+            name.includes("trending")
+          );
+        })
+      : trendingProducts;
 
   /* =====================================================
      GO HOME
   ===================================================== */
 
-  const goHome = (
-    addHistory = true
-  ) => {
+  const goHome = (addHistory = true) => {
     if (addHistory) {
       window.history.pushState(
         { page: "home" },
@@ -439,9 +269,7 @@ function App() {
         return;
       }
 
-      if (
-        page === "category"
-      ) {
+      if (page === "category") {
         setSelectedCategory(
           state.category
         );
@@ -461,9 +289,7 @@ function App() {
         return;
       }
 
-      if (
-        page === "search"
-      ) {
+      if (page === "search") {
         setSearchTerm(
           state.searchTerm || ""
         );
@@ -483,9 +309,7 @@ function App() {
         return;
       }
 
-      if (
-        page === "product-section"
-      ) {
+      if (page === "product-section") {
         setSelectedProductSection(
           state.productSection
         );
@@ -505,9 +329,7 @@ function App() {
         return;
       }
 
-      if (
-        page === "product-details"
-      ) {
+      if (page === "product-details") {
         setSelectedProduct(
           state.product
         );
@@ -527,9 +349,7 @@ function App() {
         return;
       }
 
-      if (
-        page === "cart"
-      ) {
+      if (page === "cart") {
         setSelectedProduct(null);
         setIsCartOpen(true);
         setIsCheckoutOpen(false);
@@ -537,9 +357,7 @@ function App() {
         return;
       }
 
-      if (
-        page === "checkout"
-      ) {
+      if (page === "checkout") {
         setSelectedProduct(null);
         setIsCartOpen(false);
         setIsCheckoutOpen(true);
@@ -552,9 +370,7 @@ function App() {
         return;
       }
 
-      if (
-        page === "order-confirmation"
-      ) {
+      if (page === "order-confirmation") {
         setSelectedProduct(null);
         setIsCartOpen(false);
         setIsCheckoutOpen(false);
@@ -562,9 +378,7 @@ function App() {
         return;
       }
 
-      if (
-        page === "admin-login"
-      ) {
+      if (page === "admin-login") {
         setAdminLogin(true);
         setIsAdminLoggedIn(false);
 
@@ -584,9 +398,7 @@ function App() {
         return;
       }
 
-      if (
-        page === "admin"
-      ) {
+      if (page === "admin") {
         setIsAdminLoggedIn(true);
         setAdminLogin(false);
 
@@ -622,9 +434,7 @@ function App() {
      OPEN PRODUCT DETAILS
   ===================================================== */
 
-  const openProductDetails = (
-    product
-  ) => {
+  const openProductDetails = (product) => {
     if (!product) {
       return;
     }
@@ -657,18 +467,16 @@ function App() {
      BACK FROM PRODUCT DETAILS
   ===================================================== */
 
-  const backFromProductDetails =
-    () => {
-      if (
-        window.history.state
-          ?.page ===
-        "product-details"
-      ) {
-        window.history.back();
-      } else {
-        goHome(true);
-      }
-    };
+  const backFromProductDetails = () => {
+    if (
+      window.history.state?.page ===
+      "product-details"
+    ) {
+      window.history.back();
+    } else {
+      goHome(true);
+    }
+  };
 
   /* =====================================================
      ADD TO CART
@@ -688,53 +496,50 @@ function App() {
     const requestedQuantity =
       Number(quantity) || 1;
 
-    setCart(
-      (currentCart) => {
-        const existingProduct =
-          currentCart.find(
-            (item) =>
-              getProductId(item) ===
-              productId
-          );
+    setCart((currentCart) => {
+      const existingProduct =
+        currentCart.find(
+          (item) =>
+            getProductId(item) ===
+            productId
+        );
 
-        if (existingProduct) {
-          return currentCart.map(
-            (item) =>
-              getProductId(item) ===
-              productId
-                ? {
-                    ...item,
-                    quantity:
-                      Number(
-                        item.quantity || 0
-                      ) +
-                      requestedQuantity,
-                  }
-                : item
-          );
-        }
-
-        return [
-          ...currentCart,
-          {
-            ...product,
-            quantity:
-              requestedQuantity,
-          },
-        ];
+      if (existingProduct) {
+        return currentCart.map(
+          (item) =>
+            getProductId(item) ===
+            productId
+              ? {
+                  ...item,
+                  quantity:
+                    Number(
+                      item.quantity || 0
+                    ) +
+                    requestedQuantity,
+                }
+              : item
+        );
       }
-    );
+
+      return [
+        ...currentCart,
+        {
+          ...product,
+          quantity:
+            requestedQuantity,
+        },
+      ];
+    });
   };
 
   /* =====================================================
      COMMON ADD TO CART HANDLER
-     
-     SAME FUNCTION IS USED BY:
-     HOME
-     TRENDING
-     CATEGORY
-     SEARCH
-     PRODUCT DETAILS
+
+     IMPORTANT:
+     ADD TO CART DOES NOT OPEN CART
+
+     User stays on the current page.
+     Cart opens ONLY from View Cart / Navbar Cart.
   ===================================================== */
 
   const handleProductAddToCart = (
@@ -750,89 +555,26 @@ function App() {
       quantity
     );
 
+    /*
+      IMPORTANT:
+      Do NOT use:
+      setIsCartOpen(true);
+
+      Product is added to cart,
+      but cart stays closed.
+    */
+
     setIsCartOpen(false);
     setIsCheckoutOpen(false);
-
-    setCartToast({
-      product,
-      quantity,
-    });
-  };
-
-  /* =====================================================
-     CART TOAST
-  ===================================================== */
-
-  useEffect(() => {
-    if (!cartToast) {
-      return undefined;
-    }
-
-    const timer = setTimeout(() => {
-      setCartToast(null);
-    }, 3500);
-
-    return () => clearTimeout(timer);
-  }, [cartToast]);
-
-  const closeCartToast = () => {
-    setCartToast(null);
-  };
-
-  const handleToastViewCart = () => {
-    setCartToast(null);
-    openCart();
-  };
-
-  const renderCartToast = () => {
-    if (!cartToast) {
-      return null;
-    }
-
-    return (
-      <div className="cart-toast">
-        <div className="cart-toast__icon">
-          ✓
-        </div>
-
-        <div className="cart-toast__content">
-          <strong>Added to Cart</strong>
-          <span>
-            {cartToast.product?.name || "Product"} × {cartToast.quantity || 1}
-          </span>
-        </div>
-
-        <button
-          type="button"
-          className="cart-toast__button"
-          onClick={handleToastViewCart}
-        >
-          View Cart →
-        </button>
-
-        <button
-          type="button"
-          className="cart-toast__close"
-          onClick={closeCartToast}
-          aria-label="Close cart notification"
-        >
-          ×
-        </button>
-      </div>
-    );
   };
 
   /* =====================================================
      OPEN CATEGORY
   ===================================================== */
 
-  const openCategory = (
-    category
-  ) => {
+  const openCategory = (category) => {
     const products =
-      getCategoryProducts(
-        category
-      );
+      getCategoryProducts(category);
 
     const categoryData = {
       name: category,
@@ -878,9 +620,7 @@ function App() {
      SEARCH
   ===================================================== */
 
-  const handleSearch = (
-    value
-  ) => {
+  const handleSearch = (value) => {
     setSearchTerm(value);
 
     setSelectedCategory(null);
@@ -917,60 +657,60 @@ function App() {
      TRENDING VIEW ALL
   ===================================================== */
 
-  const openTrendingProducts =
-    () => {
-      const productSection = {
-        title:
-          "Trending Products",
+  const openTrendingProducts = () => {
+    const productSection = {
+      title:
+        "Trending Products",
 
-        eyebrow:
-          "WHAT'S POPULAR",
+      eyebrow:
+        "WHAT'S POPULAR",
 
-        products:
-          groupedTrendingProducts,
+      products:
+        websiteTrendingProducts,
 
-        isTrending: true,
-      };
-
-      setSelectedProductSection(
-        productSection
-      );
-
-      setSelectedCategory(null);
-      setSelectedProduct(null);
-      setSearchTerm("");
-
-      setIsCartOpen(false);
-      setIsCheckoutOpen(false);
-
-      window.history.pushState(
-        {
-          page:
-            "product-section",
-
-          productSection,
-        },
-        "",
-        window.location.pathname
-      );
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
+      isTrending: true,
     };
+
+    setSelectedProductSection(
+      productSection
+    );
+
+    setSelectedCategory(null);
+    setSelectedProduct(null);
+    setSearchTerm("");
+
+    setIsCartOpen(false);
+    setIsCheckoutOpen(false);
+
+    window.history.pushState(
+      {
+        page:
+          "product-section",
+
+        productSection,
+      },
+      "",
+      window.location.pathname
+    );
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
 
   /* =====================================================
      CLEAR PRODUCT SECTION
   ===================================================== */
 
-  const clearProductSection =
-    () => {
-      window.history.back();
-    };
+  const clearProductSection = () => {
+    window.history.back();
+  };
 
   /* =====================================================
      OPEN CART
+
+     Cart opens only from here.
   ===================================================== */
 
   const openCart = () => {
@@ -994,8 +734,8 @@ function App() {
 
   const closeCart = () => {
     if (
-      window.history.state
-        ?.page === "cart"
+      window.history.state?.page ===
+      "cart"
     ) {
       window.history.back();
     } else {
@@ -1063,7 +803,9 @@ function App() {
     let deliveryCharge = 0;
 
     if (subtotal < 99) {
-      if (area.includes("mahilong")) {
+      if (
+        area.includes("mahilong")
+      ) {
         deliveryCharge = 10;
       } else if (
         area.includes("tatisilwai")
@@ -1081,7 +823,9 @@ function App() {
 
     const newOrderId =
       "SB" +
-      Date.now().toString().slice(-6);
+      Date.now()
+        .toString()
+        .slice(-6);
 
     /* =====================================================
        ORDER ITEMS
@@ -1090,14 +834,26 @@ function App() {
     const orderItems = cart.map(
       (item) => ({
         productId: String(
-          item._id || item.id || ""
+          item._id ||
+            item.id ||
+            ""
         ),
-        name: item.name || "",
-        image: item.image || "",
-        price: Number(item.price || 0),
-        quantity: Number(
-          item.quantity || 0
-        ),
+
+        name:
+          item.name || "",
+
+        image:
+          item.image || "",
+
+        price:
+          Number(
+            item.price || 0
+          ),
+
+        quantity:
+          Number(
+            item.quantity || 0
+          ),
       })
     );
 
@@ -1111,34 +867,47 @@ function App() {
         ORDERS_API_URL
       );
 
-      const response = await fetch(
-        ORDERS_API_URL,
-        {
-          method: "POST",
+      const response =
+        await fetch(
+          ORDERS_API_URL,
+          {
+            method: "POST",
 
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-
-          body: JSON.stringify({
-            customer: {
-              name: customer.name,
-              mobile: customer.phone,
-              address: customer.address,
-              area: customer.area,
+            headers: {
+              "Content-Type":
+                "application/json",
             },
 
-            items: orderItems,
+            body: JSON.stringify({
+              customer: {
+                name:
+                  customer.name,
 
-            subtotal,
-            deliveryCharge,
-            total: totalAmount,
+                mobile:
+                  customer.phone,
 
-            paymentMethod: "COD",
-          }),
-        }
-      );
+                address:
+                  customer.address,
+
+                area:
+                  customer.area,
+              },
+
+              items:
+                orderItems,
+
+              subtotal,
+
+              deliveryCharge,
+
+              total:
+                totalAmount,
+
+              paymentMethod:
+                "COD",
+            }),
+          }
+        );
 
       const data =
         await response.json();
@@ -1181,8 +950,12 @@ function App() {
         .map(
           (item) =>
             `• ${item.name} x ${item.quantity} = ₹${
-              Number(item.price || 0) *
-              Number(item.quantity || 0)
+              Number(
+                item.price || 0
+              ) *
+              Number(
+                item.quantity || 0
+              )
             }`
         )
         .join("\n");
@@ -1241,7 +1014,8 @@ Thank you!
       subtotal,
       deliveryCharge,
       totalAmount,
-      orderId: newOrderId,
+      orderId:
+        newOrderId,
     });
 
     setCart([]);
@@ -1460,8 +1234,6 @@ Thank you!
             openCheckout
           }
         />
-
-        {renderCartToast()}
       </div>
     );
   }
@@ -1486,6 +1258,8 @@ Thank you!
 
   /* =====================================================
      SEARCH RESULTS
+
+     NO GROUPING
   ===================================================== */
 
   if (searchTerm.trim()) {
@@ -1521,9 +1295,7 @@ Thank you!
             handleProductAddToCart
           }
           products={
-            groupProducts(
-              allProducts
-            )
+            allProducts
           }
         />
 
@@ -1538,8 +1310,6 @@ Thank you!
             openCheckout
           }
         />
-
-        {renderCartToast()}
       </div>
     );
   }
@@ -1596,8 +1366,6 @@ Thank you!
             openCheckout
           }
         />
-
-        {renderCartToast()}
       </div>
     );
   }
@@ -1656,8 +1424,6 @@ Thank you!
             openCheckout
           }
         />
-
-        {renderCartToast()}
       </div>
     );
   }
@@ -1695,10 +1461,14 @@ Thank you!
       {productsLoading ? (
         <div
           style={{
-            minHeight: "200px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            minHeight:
+              "200px",
+            display:
+              "flex",
+            alignItems:
+              "center",
+            justifyContent:
+              "center",
           }}
         >
           Loading products...
@@ -1711,7 +1481,7 @@ Thank you!
             title="Trending Products"
             eyebrow="WHAT'S POPULAR"
             products={
-              groupedTrendingProducts
+              websiteTrendingProducts
             }
             onProductClick={
               openProductDetails
@@ -1729,7 +1499,7 @@ Thank you!
           <ProductSection
             title="Frames"
             eyebrow="SPECIAL MOMENTS"
-            products={groupProducts(
+            products={
               websiteProducts.filter(
                 (product) => {
                   const category =
@@ -1745,7 +1515,7 @@ Thank you!
                   );
                 }
               )
-            )}
+            }
             onProductClick={
               openProductDetails
             }
@@ -1759,7 +1529,7 @@ Thank you!
           <ProductSection
             title="Keychains"
             eyebrow="SMALL & STYLISH"
-            products={groupProducts(
+            products={
               websiteProducts.filter(
                 (product) =>
                   normalizeValue(
@@ -1767,7 +1537,7 @@ Thank you!
                   ) ===
                   "keychains"
               )
-            )}
+            }
             onProductClick={
               openProductDetails
             }
@@ -1781,7 +1551,7 @@ Thank you!
           <ProductSection
             title="Daily Essentials"
             eyebrow="EVERYDAY ESSENTIALS"
-            products={groupProducts(
+            products={
               websiteProducts.filter(
                 (product) => {
                   const category =
@@ -1802,7 +1572,7 @@ Thank you!
                   );
                 }
               )
-            )}
+            }
             onProductClick={
               openProductDetails
             }
@@ -1832,8 +1602,6 @@ Thank you!
           openCheckout
         }
       />
-
-        {renderCartToast()}
     </div>
   );
 }

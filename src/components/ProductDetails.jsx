@@ -6,13 +6,9 @@ function ProductDetails({
   onAddToCart,
   onBack,
 }) {
-  const [selectedVariant, setSelectedVariant] =
-    useState(product);
-
   const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
-    setSelectedVariant(product);
     setQuantity(1);
 
     window.scrollTo({
@@ -39,71 +35,20 @@ function ProductDetails({
   }
 
   /*
-   * IMPORTANT
-   * Variants are already grouped in App.jsx.
-   * We only use product.variants here.
+   * =====================================================
+   * PRODUCT STOCK
+   * =====================================================
+   *
+   * Every product is now independent.
+   * No variants / grouping.
    */
 
-  const variants =
-    Array.isArray(product.variants) &&
-    product.variants.length > 0
-      ? product.variants
-      : [product];
-
-  const hasVariants =
-    variants.length > 1;
-
-  const getId = (item) =>
-    item?._id || item?.id;
+  const stock = Number(product?.stock ?? 0);
 
   /*
-   * Variant name
-   */
-
-  const getVariantLabel = (variant) => {
-    const name = String(
-      variant?.name || ""
-    ).toLowerCase();
-
-    // Notebook variants
-    if (name.includes("hindi")) {
-      return "Hindi";
-    }
-
-    if (name.includes("english")) {
-      return "English";
-    }
-
-    if (name.includes("maths")) {
-      return "Maths";
-    }
-
-    // Generic variants
-    if (variant?.color) {
-      return variant.color;
-    }
-
-    if (variant?.pattern) {
-      return variant.pattern;
-    }
-
-    if (variant?.size) {
-      return variant.size;
-    }
-
-    if (variant?.type) {
-      return variant.type;
-    }
-
-    return variant?.name || "Option";
-  };
-
-  const stock = Number(
-    selectedVariant?.stock || 0
-  );
-
-  /*
-   * Quantity
+   * =====================================================
+   * QUANTITY
+   * =====================================================
    */
 
   const increaseQuantity = () => {
@@ -130,25 +75,13 @@ function ProductDetails({
   };
 
   /*
-   * Variant select
-   */
-
-  const selectVariant = (variant) => {
-    setSelectedVariant(variant);
-    setQuantity(1);
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
-
-  /*
-   * Add to cart
+   * =====================================================
+   * ADD TO CART
+   * =====================================================
    */
 
   const handleAddToCart = () => {
-    if (!selectedVariant) {
+    if (!product) {
       return;
     }
 
@@ -164,61 +97,64 @@ function ProductDetails({
     }
 
     onAddToCart(
-      selectedVariant,
+      product,
       quantity
     );
   };
 
   /*
-   * Product details
+   * =====================================================
+   * PRODUCT DETAILS
+   * =====================================================
    */
 
   const details = [];
 
   if (
-    selectedVariant.pages !==
-      undefined &&
-    selectedVariant.pages !== null &&
-    selectedVariant.pages !== ""
+    product.pages !== undefined &&
+    product.pages !== null &&
+    product.pages !== ""
   ) {
     details.push({
       label: "Pages",
-      value: selectedVariant.pages,
+      value: product.pages,
     });
   }
 
-  if (selectedVariant.pattern) {
+  if (product.pattern) {
     details.push({
       label: "Pattern",
-      value: selectedVariant.pattern,
+      value: product.pattern,
     });
   }
 
-  if (selectedVariant.type) {
+  if (product.type) {
     details.push({
       label: "Type",
-      value: selectedVariant.type,
+      value: product.type,
     });
   }
 
-  if (selectedVariant.size) {
+  if (product.size) {
     details.push({
       label: "Size",
-      value: selectedVariant.size,
+      value: product.size,
     });
   }
 
-  if (selectedVariant.color) {
+  if (product.color) {
     details.push({
       label: "Color",
-      value: selectedVariant.color,
+      value: product.color,
     });
   }
 
   return (
     <main className="product-details">
 
-      {/* BACK */}
+      {/* =================================================
+          BACK
+      ================================================= */}
 
       <div className="product-details__top">
         <button
@@ -232,16 +168,19 @@ function ProductDetails({
 
       <div className="product-details__container">
 
-        {/* IMAGE */}
+        {/* =================================================
+            IMAGE
+        ================================================= */}
 
         <div className="product-details__gallery">
           <div className="product-details__main-image">
 
-            {selectedVariant.image ? (
+            {product.image ? (
               <img
-                src={selectedVariant.image}
+                src={product.image}
                 alt={
-                  selectedVariant.name
+                  product.name ||
+                  "Product"
                 }
               />
             ) : (
@@ -253,13 +192,15 @@ function ProductDetails({
           </div>
         </div>
 
-        {/* INFORMATION */}
+        {/* =================================================
+            INFORMATION
+        ================================================= */}
 
         <div className="product-details__info">
 
           <span className="product-details__category">
-            {selectedVariant.type ||
-              selectedVariant.category ||
+            {product.type ||
+              product.category ||
               "Stationery"}
           </span>
 
@@ -267,13 +208,17 @@ function ProductDetails({
             {product.name}
           </h1>
 
-          {/* PRICE */}
+          {/* =================================================
+              PRICE
+          ================================================= */}
 
           <div className="product-details__price">
-            ₹{selectedVariant.price}
+            ₹{product.price}
           </div>
 
-          {/* STOCK */}
+          {/* =================================================
+              STOCK
+          ================================================= */}
 
           <div
             className={`product-details__stock ${
@@ -289,71 +234,9 @@ function ProductDetails({
                 : "In Stock"}
           </div>
 
-          {/* VARIANTS */}
-
-          {hasVariants && (
-            <div className="product-details__variants">
-
-              <h3>
-                Available Options
-              </h3>
-
-              <div className="product-details__variant-list">
-
-                {variants.map(
-                  (variant) => {
-                    const id =
-                      getId(variant);
-
-                    const selectedId =
-                      getId(
-                        selectedVariant
-                      );
-
-                    const active =
-                      id ===
-                      selectedId;
-
-                    return (
-                      <button
-                        type="button"
-                        key={
-                          id ||
-                          `${variant.name}-${variant.price}`
-                        }
-                        className={`product-details__variant ${
-                          active
-                            ? "product-details__variant--active"
-                            : ""
-                        }`}
-                        onClick={() =>
-                          selectVariant(
-                            variant
-                          )
-                        }
-                      >
-                        <span>
-                          {getVariantLabel(
-                            variant
-                          )}
-                        </span>
-
-                        <strong>
-                          ₹
-                          {
-                            variant.price
-                          }
-                        </strong>
-                      </button>
-                    );
-                  }
-                )}
-
-              </div>
-            </div>
-          )}
-
-          {/* DETAILS */}
+          {/* =================================================
+              DETAILS
+          ================================================= */}
 
           {details.length > 0 && (
             <div className="product-details__specifications">
@@ -373,15 +256,11 @@ function ProductDetails({
                       }
                     >
                       <span>
-                        {
-                          detail.label
-                        }
+                        {detail.label}
                       </span>
 
                       <strong>
-                        {
-                          detail.value
-                        }
+                        {detail.value}
                       </strong>
                     </div>
                   )
@@ -391,9 +270,11 @@ function ProductDetails({
             </div>
           )}
 
-          {/* DESCRIPTION */}
+          {/* =================================================
+              DESCRIPTION
+          ================================================= */}
 
-          {selectedVariant.description && (
+          {product.description && (
             <div className="product-details__description">
 
               <h3>
@@ -401,15 +282,15 @@ function ProductDetails({
               </h3>
 
               <p>
-                {
-                  selectedVariant.description
-                }
+                {product.description}
               </p>
 
             </div>
           )}
 
-          {/* PURCHASE */}
+          {/* =================================================
+              PURCHASE
+          ================================================= */}
 
           <div className="product-details__purchase">
 
@@ -451,6 +332,7 @@ function ProductDetails({
                 </button>
 
               </div>
+
             </div>
 
             <button
@@ -472,6 +354,7 @@ function ProductDetails({
 
         </div>
       </div>
+
     </main>
   );
 }
