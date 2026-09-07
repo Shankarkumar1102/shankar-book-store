@@ -1,73 +1,84 @@
 import "./SearchResults.css";
 
-import notebooks from "../data/notebooks";
-import pens from "../data/pens";
-import keychains from "../data/keychains";
-import resinFrames from "../data/resinFrames";
-import photoFrames from "../data/photoFrames";
-import waterBottles from "../data/waterBottles";
-import artCraft from "../data/artCraft";
-import geometricBoxes from "../data/geometricBoxes";
-
 function SearchResults({
   searchTerm,
-  addToCart,
+  products = [],
+  onProductClick,
+  onAddToCart,
   onClearSearch,
 }) {
-  const search = searchTerm.toLowerCase().trim();
+  const search = String(searchTerm || "")
+    .trim()
+    .toLowerCase();
 
-  const allProducts = [
-    ...notebooks,
-    ...pens,
-    ...keychains,
-    ...resinFrames,
-    ...photoFrames,
-    ...waterBottles,
-    ...artCraft,
-    ...geometricBoxes,
-  ];
-
-  const filteredProducts = allProducts.filter((product) => {
-    const name = String(product.name || "").toLowerCase();
-    const type = String(product.type || "").toLowerCase();
-    const pattern = String(product.pattern || "").toLowerCase();
-    const category = String(product.category || "").toLowerCase();
-    const brand = String(product.brand || "").toLowerCase();
-    const price = String(product.price || "").toLowerCase();
-    const pages = String(product.pages || "").toLowerCase();
+  const results = products.filter((product) => {
+    const name = String(product?.name || "").toLowerCase();
+    const category = String(product?.category || "").toLowerCase();
+    const type = String(product?.type || "").toLowerCase();
     const description = String(
-      product.description || ""
+      product?.description || ""
+    ).toLowerCase();
+    const pattern = String(
+      product?.pattern || ""
+    ).toLowerCase();
+    const color = String(
+      product?.color || ""
     ).toLowerCase();
 
     return (
       name.includes(search) ||
-      type.includes(search) ||
-      pattern.includes(search) ||
       category.includes(search) ||
-      brand.includes(search) ||
-      price.includes(search) ||
-      pages.includes(search) ||
-      description.includes(search)
+      type.includes(search) ||
+      description.includes(search) ||
+      pattern.includes(search) ||
+      color.includes(search)
     );
   });
 
+  const handleProductClick = (product) => {
+    if (typeof onProductClick === "function") {
+      onProductClick(product);
+    }
+  };
+
+  const handleKeyDown = (event, product) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handleProductClick(product);
+    }
+  };
+
+  const handleAddToCart = (event, product) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (typeof onAddToCart === "function") {
+      onAddToCart(product);
+    }
+  };
+
   return (
     <main className="search-results">
+      {/* ================= HEADER ================= */}
       <div className="search-results__header">
         <span className="search-results__eyebrow">
           SEARCH RESULTS
         </span>
 
         <h1>
-          Results for{" "}
-          <strong>"{searchTerm}"</strong>
+          Search results for "{searchTerm}"
         </h1>
 
-        <p>
-          {filteredProducts.length} products found
+        <p className="search-results__count">
+          {results.length}{" "}
+          {results.length === 1
+            ? "product"
+            : "products"}{" "}
+          found
         </p>
       </div>
 
+      {/* ================= BACK ================= */}
       <button
         type="button"
         className="search-results__back"
@@ -76,28 +87,39 @@ function SearchResults({
         ← Back to Home
       </button>
 
-      {filteredProducts.length > 0 ? (
+      {/* ================= PRODUCTS ================= */}
+      {results.length > 0 ? (
         <div className="search-results__grid">
-          {filteredProducts.map((product) => (
+          {results.map((product) => (
             <article
-              className="product-card"
-              key={product.id}
+              key={product._id || product.id}
+              className="search-product-card"
+              role="button"
+              tabIndex={0}
+              onClick={() =>
+                handleProductClick(product)
+              }
+              onKeyDown={(event) =>
+                handleKeyDown(event, product)
+              }
+              aria-label={`View ${product.name}`}
             >
-              <div className="product-card__image">
+              {/* ================= IMAGE ================= */}
+              <div className="search-product-card__image">
                 {product.image ? (
                   <img
                     src={product.image}
                     alt={product.name}
+                    loading="lazy"
                   />
                 ) : (
-                  <span className="product-card__placeholder">
-                    📦
-                  </span>
+                  <span>📦</span>
                 )}
               </div>
 
-              <div className="product-card__info">
-                <span className="product-card__category">
+              {/* ================= INFO ================= */}
+              <div className="search-product-card__info">
+                <span className="search-product-card__category">
                   {product.type ||
                     product.category ||
                     "Stationery"}
@@ -105,7 +127,7 @@ function SearchResults({
 
                 <h3>{product.name}</h3>
 
-                <p className="product-card__details">
+                <p>
                   {product.pages
                     ? `${product.pages} Pages${
                         product.pattern
@@ -114,22 +136,43 @@ function SearchResults({
                       }`
                     : product.pattern ||
                       product.description ||
-                      ""}
+                      "Quality stationery product."}
                 </p>
 
-                <div className="product-card__bottom">
+                {/* ================= PRICE ================= */}
+                <div className="search-product-card__bottom">
                   <strong>
                     ₹{product.price}
                   </strong>
+                </div>
+
+                {/* ================= ACTIONS ================= */}
+                <div className="search-product-card__actions">
+                  <button
+                    type="button"
+                    className="search-product-card__add"
+                    onClick={(event) =>
+                      handleAddToCart(
+                        event,
+                        product
+                      )
+                    }
+                  >
+                    🛒 Add to Cart
+                  </button>
 
                   <button
                     type="button"
-                    className="product-card__add"
-                    onClick={() =>
-                      addToCart(product)
-                    }
+                    className="search-product-card__details"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+
+                      handleProductClick(product);
+                    }}
                   >
-                    + Add
+                    View Details
+                    <span>→</span>
                   </button>
                 </div>
               </div>
@@ -137,16 +180,15 @@ function SearchResults({
           ))}
         </div>
       ) : (
+        /* ================= EMPTY ================= */
         <div className="search-results__empty">
-          <span>🔎</span>
+          <span>🔍</span>
 
           <h2>No products found</h2>
 
           <p>
-            Try searching for notebooks, pens,
-            keychains, bottles, art & craft,
-            geometric boxes, resin frames or
-            photo frames.
+            We couldn't find any product matching "
+            {searchTerm}".
           </p>
 
           <button

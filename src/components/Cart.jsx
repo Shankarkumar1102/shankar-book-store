@@ -1,4 +1,3 @@
-import { useState } from "react";
 import "./Cart.css";
 
 function Cart({
@@ -8,22 +7,26 @@ function Cart({
   onClose,
   onCheckout,
 }) {
-  const [deliveryArea, setDeliveryArea] = useState("");
-
   // ================= ITEM KEY =================
 
   const getItemKey = (item) =>
-    `${item.category || "product"}-${item.id}`;
+    `${item.category || "product"}-${
+      item._id || item.id
+    }`;
 
   // ================= INCREASE QUANTITY =================
 
   const increaseQuantity = (item) => {
     setCart((currentCart) =>
       currentCart.map((cartItem) =>
-        getItemKey(cartItem) === getItemKey(item)
+        getItemKey(cartItem) ===
+        getItemKey(item)
           ? {
               ...cartItem,
-              quantity: cartItem.quantity + 1,
+              quantity:
+                Number(
+                  cartItem.quantity || 0
+                ) + 1,
             }
           : cartItem
       )
@@ -36,14 +39,23 @@ function Cart({
     setCart((currentCart) =>
       currentCart
         .map((cartItem) =>
-          getItemKey(cartItem) === getItemKey(item)
+          getItemKey(cartItem) ===
+          getItemKey(item)
             ? {
                 ...cartItem,
-                quantity: cartItem.quantity - 1,
+                quantity:
+                  Number(
+                    cartItem.quantity || 0
+                  ) - 1,
               }
             : cartItem
         )
-        .filter((cartItem) => cartItem.quantity > 0)
+        .filter(
+          (cartItem) =>
+            Number(
+              cartItem.quantity || 0
+            ) > 0
+        )
     );
   };
 
@@ -53,7 +65,8 @@ function Cart({
     setCart((currentCart) =>
       currentCart.filter(
         (cartItem) =>
-          getItemKey(cartItem) !== getItemKey(item)
+          getItemKey(cartItem) !==
+          getItemKey(item)
       )
     );
   };
@@ -62,13 +75,14 @@ function Cart({
 
   const totalItems = cart.reduce(
     (total, item) =>
-      total + Number(item.quantity || 0),
+      total +
+      Number(item.quantity || 0),
     0
   );
 
   // ================= SUBTOTAL =================
 
-  const totalAmount = cart.reduce(
+  const subtotal = cart.reduce(
     (total, item) =>
       total +
       Number(item.price || 0) *
@@ -76,27 +90,30 @@ function Cart({
     0
   );
 
-  // ================= DELIVERY CHARGE =================
+  // ================= FREE DELIVERY =================
 
-  let deliveryCharge = 0;
+  const FREE_DELIVERY_LIMIT = 99;
 
-  if (totalAmount < 99) {
-    if (deliveryArea === "Mahilong") {
-      deliveryCharge = 10;
-    } else if (deliveryArea === "Tatisilwai") {
-      deliveryCharge = 20;
-    } else if (deliveryArea === "Namkum") {
-      deliveryCharge = 30;
-    }
-  }
+  const remainingForFreeDelivery =
+    Math.max(
+      FREE_DELIVERY_LIMIT - subtotal,
+      0
+    );
 
-  // ================= FINAL TOTAL =================
+  const deliveryProgress = Math.min(
+    (subtotal / FREE_DELIVERY_LIMIT) *
+      100,
+    100
+  );
 
-  const finalTotal = totalAmount + deliveryCharge;
+  const isFreeDelivery =
+    subtotal >= FREE_DELIVERY_LIMIT;
 
   return (
     <>
-      {/* ================= OVERLAY ================= */}
+      {/* ==================================================
+          OVERLAY
+      ================================================== */}
 
       {isOpen && (
         <div
@@ -105,19 +122,28 @@ function Cart({
         />
       )}
 
-      {/* ================= CART DRAWER ================= */}
+      {/* ==================================================
+          CART DRAWER
+      ================================================== */}
 
       <aside
         className={`cart-drawer ${
-          isOpen ? "cart-drawer--open" : ""
+          isOpen
+            ? "cart-drawer--open"
+            : ""
         }`}
       >
-        {/* ================= HEADER ================= */}
+        {/* ==================================================
+            HEADER
+        ================================================== */}
 
         <div className="cart-drawer__header">
           <div>
             <span>YOUR CART</span>
-            <h2>Shopping Cart</h2>
+
+            <h2>
+              Shopping Cart
+            </h2>
           </div>
 
           <button
@@ -130,7 +156,9 @@ function Cart({
           </button>
         </div>
 
-        {/* ================= EMPTY CART ================= */}
+        {/* ==================================================
+            EMPTY CART
+        ================================================== */}
 
         {cart.length === 0 ? (
           <div className="cart-drawer__empty">
@@ -138,11 +166,13 @@ function Cart({
               🛒
             </div>
 
-            <h3>Your cart is empty</h3>
+            <h3>
+              Your cart is empty
+            </h3>
 
             <p>
-              Add some stationery products
-              to get started.
+              Add some stationery
+              products to get started.
             </p>
 
             <button
@@ -154,7 +184,64 @@ function Cart({
           </div>
         ) : (
           <>
-            {/* ================= CART ITEMS ================= */}
+            {/* ==================================================
+                FREE DELIVERY PROGRESS
+            ================================================== */}
+
+            <div className="cart-drawer__delivery-progress">
+              <div className="cart-drawer__delivery-icon">
+                {isFreeDelivery
+                  ? "✓"
+                  : "🚚"}
+              </div>
+
+              <div className="cart-drawer__delivery-content">
+                {isFreeDelivery ? (
+                  <>
+                    <strong>
+                      FREE DELIVERY
+                      UNLOCKED!
+                    </strong>
+
+                    <span>
+                      🎉 Your order
+                      qualifies for free
+                      delivery
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <strong>
+                      ₹
+                      {
+                        remainingForFreeDelivery
+                      }{" "}
+                      more to ₹99 FREE
+                      DELIVERY
+                    </strong>
+
+                    <span>
+                      Add more products
+                      to get free
+                      delivery
+                    </span>
+
+                    <div className="cart-drawer__delivery-bar">
+                      <div
+                        className="cart-drawer__delivery-bar-fill"
+                        style={{
+                          width: `${deliveryProgress}%`,
+                        }}
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* ==================================================
+                CART ITEMS
+            ================================================== */}
 
             <div className="cart-drawer__items">
               {cart.map((item) => (
@@ -162,6 +249,8 @@ function Cart({
                   className="cart-drawer__item"
                   key={getItemKey(item)}
                 >
+                  {/* PRODUCT IMAGE */}
+
                   <div className="cart-drawer__image">
                     {item.image ? (
                       <img
@@ -169,9 +258,13 @@ function Cart({
                         alt={item.name}
                       />
                     ) : (
-                      <span>📦</span>
+                      <span>
+                        📦
+                      </span>
                     )}
                   </div>
+
+                  {/* PRODUCT INFO */}
 
                   <div className="cart-drawer__info">
                     <span>
@@ -180,7 +273,9 @@ function Cart({
                         "PRODUCT"}
                     </span>
 
-                    <h3>{item.name}</h3>
+                    <h3>
+                      {item.name}
+                    </h3>
 
                     <p>
                       {item.pages
@@ -198,13 +293,18 @@ function Cart({
                       ₹{item.price}
                     </strong>
 
+                    {/* QUANTITY ACTIONS */}
+
                     <div className="cart-drawer__actions">
                       <div className="cart-drawer__quantity">
                         <button
                           type="button"
                           onClick={() =>
-                            decreaseQuantity(item)
+                            decreaseQuantity(
+                              item
+                            )
                           }
+                          aria-label={`Decrease quantity of ${item.name}`}
                         >
                           −
                         </button>
@@ -216,8 +316,11 @@ function Cart({
                         <button
                           type="button"
                           onClick={() =>
-                            increaseQuantity(item)
+                            increaseQuantity(
+                              item
+                            )
                           }
+                          aria-label={`Increase quantity of ${item.name}`}
                         >
                           +
                         </button>
@@ -235,193 +338,113 @@ function Cart({
                     </div>
                   </div>
 
+                  {/* ITEM TOTAL */}
+
                   <strong className="cart-drawer__item-total">
                     ₹
-                    {Number(item.price || 0) *
-                      Number(item.quantity || 0)}
+                    {Number(
+                      item.price || 0
+                    ) *
+                      Number(
+                        item.quantity || 0
+                      )}
                   </strong>
                 </article>
               ))}
             </div>
 
-            {/* ================= SUMMARY ================= */}
+            {/* ==================================================
+                CART SUMMARY
+            ================================================== */}
 
             <div className="cart-drawer__summary">
-
               {/* PRODUCTS */}
 
               <div className="cart-drawer__row">
-                <span>Products</span>
-                <span>{totalItems}</span>
+                <span>
+                  Products
+                </span>
+
+                <span>
+                  {totalItems}
+                </span>
               </div>
 
               {/* SUBTOTAL */}
 
               <div className="cart-drawer__row">
-                <span>Subtotal</span>
-                <span>₹{totalAmount}</span>
+                <span>
+                  Subtotal
+                </span>
+
+                <span>
+                  ₹{subtotal}
+                </span>
               </div>
 
-              {/* ================= DELIVERY AREA ================= */}
+              {/* DELIVERY */}
+
+              <div className="cart-drawer__row">
+                <span>
+                  Delivery
+                </span>
+
+                <span
+                  className={
+                    isFreeDelivery
+                      ? "cart-drawer__free"
+                      : ""
+                  }
+                >
+                  {isFreeDelivery
+                    ? "FREE"
+                    : "Calculated at checkout"}
+                </span>
+              </div>
+
+              {/* DELIVERY NOTE */}
 
               <div
                 style={{
-                  marginTop: "14px",
-                  marginBottom: "10px",
+                  marginTop: "4px",
+                  marginBottom: "12px",
+                  color: "#817679",
+                  fontSize: "10px",
+                  lineHeight: "1.5",
                 }}
               >
-                <label
-                  htmlFor="cart-delivery-area"
-                  style={{
-                    display: "block",
-                    marginBottom: "6px",
-                    fontSize: "11px",
-                    fontWeight: "700",
-                    color: "var(--color-plum)",
-                  }}
-                >
-                  Delivery Area
-                </label>
-
-                <select
-                  id="cart-delivery-area"
-                  value={deliveryArea}
-                  onChange={(e) =>
-                    setDeliveryArea(e.target.value)
-                  }
-                  style={{
-                    width: "100%",
-                    padding: "10px 12px",
-                    border:
-                      "1px solid var(--color-light-border)",
-                    borderRadius: "10px",
-                    backgroundColor:
-                      "var(--color-white)",
-                    color: "var(--color-ink)",
-                    fontSize: "11px",
-                    fontWeight: "600",
-                    outline: "none",
-                    cursor: "pointer",
-                  }}
-                >
-                  <option value="">
-                    Select your area
-                  </option>
-
-                  <option value="Mahilong">
-                    Mahilong
-                  </option>
-
-                  <option value="Tatisilwai">
-                    Tatisilwai
-                  </option>
-
-                  <option value="Namkum">
-                    Namkum
-                  </option>
-                </select>
-              </div>
-
-              {/* ================= DELIVERY ================= */}
-
-              <div className="cart-drawer__row">
-                <span>Delivery</span>
-
-                {totalAmount >= 99 ? (
-                  <span className="cart-drawer__free">
-                    FREE
-                  </span>
-                ) : !deliveryArea ? (
-                  <span>Select Area</span>
+                {isFreeDelivery ? (
+                  <>
+                    🎉 Free delivery
+                    unlocked.
+                  </>
                 ) : (
-                  <span>₹{deliveryCharge}</span>
+                  <>
+                    📍 Delivery charge
+                    will be calculated
+                    after selecting your
+                    area at checkout.
+                  </>
                 )}
               </div>
 
-              {/* ================= DELIVERY MESSAGE ================= */}
-
-              {totalAmount >= 99 ? (
-                <div
-                  style={{
-                    marginTop: "4px",
-                    marginBottom: "12px",
-                    color: "#668b6b",
-                    fontSize: "10px",
-                    lineHeight: "1.5",
-                  }}
-                >
-                  🎉 Your order qualifies for
-                  FREE delivery.
-                </div>
-              ) : !deliveryArea ? (
-                <div
-                  style={{
-                    marginTop: "4px",
-                    marginBottom: "12px",
-                    color: "#817679",
-                    fontSize: "10px",
-                    lineHeight: "1.5",
-                  }}
-                >
-                  📍 Select your delivery area
-                  to see the delivery charge.
-                </div>
-              ) : deliveryArea === "Mahilong" ? (
-                <div
-                  style={{
-                    marginTop: "4px",
-                    marginBottom: "12px",
-                    color: "#668b6b",
-                    fontSize: "10px",
-                    lineHeight: "1.5",
-                  }}
-                >
-                  🚚 Mahilong delivery charge:
-                  ₹10
-                </div>
-              ) : deliveryArea === "Tatisilwai" ? (
-                <div
-                  style={{
-                    marginTop: "4px",
-                    marginBottom: "12px",
-                    color: "#668b6b",
-                    fontSize: "10px",
-                    lineHeight: "1.5",
-                  }}
-                >
-                  🚚 Tatisilwai delivery charge:
-                  ₹20
-                </div>
-              ) : (
-                <div
-                  style={{
-                    marginTop: "4px",
-                    marginBottom: "12px",
-                    color: "#668b6b",
-                    fontSize: "10px",
-                    lineHeight: "1.5",
-                  }}
-                >
-                  🚚 Namkum delivery charge:
-                  ₹30
-                </div>
-              )}
-
-              {/* ================= DIVIDER ================= */}
+              {/* DIVIDER */}
 
               <div className="cart-drawer__divider" />
 
-              {/* ================= FINAL TOTAL ================= */}
+              {/* TOTAL */}
 
               <div className="cart-drawer__total">
-                <span>Total</span>
+                <span>
+                  Total
+                </span>
 
                 <strong>
-                  ₹{finalTotal}
+                  ₹{subtotal}
                 </strong>
               </div>
 
-              {/* ================= CHECKOUT ================= */}
+              {/* CHECKOUT */}
 
               <button
                 type="button"

@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import CategorySection from "./components/CategorySection";
 import CategoryResults from "./components/CategoryResults";
 import ProductSection from "./components/ProductSection";
+import ProductDetails from "./components/ProductDetails";
 import OfferBanner from "./components/OfferBanner";
 import Footer from "./components/Footer";
 
@@ -29,8 +30,15 @@ import otherStationery from "./data/otherStationery";
 import giftingItems from "./data/giftingItems";
 import trendingProducts from "./data/trendingProducts";
 
+/* =====================================================
+   API
+===================================================== */
+
 const API_URL =
   "https://shankar-book-store-2.onrender.com/api/products";
+
+const ORDERS_API_URL =
+  "https://shankar-book-store-2.onrender.com/api/orders";
 
 function App() {
   const [cart, setCart] = useState([]);
@@ -39,20 +47,33 @@ function App() {
   const [productsLoading, setProductsLoading] = useState(true);
 
   const [selectedCategory, setSelectedCategory] = useState(null);
+
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedProductSection, setSelectedProductSection] =
-    useState(null);
+
+  const [
+    selectedProductSection,
+    setSelectedProductSection,
+  ] = useState(null);
+
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const [cartToast, setCartToast] = useState(null);
+
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [orderConfirmation, setOrderConfirmation] = useState(null);
+
+  const [orderConfirmation, setOrderConfirmation] =
+    useState(null);
 
   const [adminLogin, setAdminLogin] = useState(false);
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
 
-  // =========================================================
-  // LOAD PRODUCTS
-  // =========================================================
+  const [isAdminLoggedIn, setIsAdminLoggedIn] =
+    useState(false);
+
+  /* =====================================================
+     LOAD PRODUCTS FROM BACKEND
+  ===================================================== */
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -65,9 +86,12 @@ function App() {
 
         const data = await response.json();
 
-        setDbProducts(Array.isArray(data) ? data : []);
+        setDbProducts(
+          Array.isArray(data) ? data : []
+        );
       } catch (error) {
         console.error("Product API error:", error);
+
         setDbProducts([]);
       } finally {
         setProductsLoading(false);
@@ -77,93 +101,280 @@ function App() {
     loadProducts();
   }, []);
 
-  // =========================================================
-  // LOCAL PRODUCTS
-  // =========================================================
+  /* =====================================================
+     LOCAL PRODUCTS
+  ===================================================== */
 
-  const localProducts = [
-    ...notebooks,
-    ...pens,
-    ...schoolOffice,
-    ...artCraft,
-    ...pencilBoxes,
-    ...bottlesTiffins,
-    ...keychains,
-    ...otherStationery,
-    ...giftingItems,
-    ...photoFrames,
-    ...resinFrames,
-    ...trendingProducts,
-  ];
-
-  // =========================================================
-  // WEBSITE PRODUCTS
-  // =========================================================
+  const localProducts = useMemo(
+    () => [
+      ...notebooks,
+      ...pens,
+      ...schoolOffice,
+      ...artCraft,
+      ...pencilBoxes,
+      ...bottlesTiffins,
+      ...keychains,
+      ...otherStationery,
+      ...giftingItems,
+      ...photoFrames,
+      ...resinFrames,
+      ...trendingProducts,
+    ],
+    []
+  );
 
   const websiteProducts =
-    dbProducts.length > 0 ? dbProducts : localProducts;
+    dbProducts.length > 0
+      ? dbProducts
+      : localProducts;
 
   const allProducts = websiteProducts;
 
-  // =========================================================
-  // CATEGORY PRODUCTS
-  // =========================================================
+  /* =====================================================
+     HELPERS
+  ===================================================== */
 
-  const getCategoryProducts = (category) => {
-    return websiteProducts.filter((product) => {
-      const productCategory = String(
-        product.category || ""
+  const getProductId = (product) =>
+    product?._id || product?.id;
+
+  const normalizeValue = (value) =>
+    String(value || "")
+      .trim()
+      .toLowerCase();
+
+  /* =====================================================
+     NOTEBOOK SUBJECT CHECK
+
+     Hindi / English / Maths notebooks with same
+     price/pages/type/size should become one product.
+  ===================================================== */
+
+  const isSubjectNotebook = (product) => {
+    const category = normalizeValue(
+      product?.category
+    );
+
+    const name = normalizeValue(
+      product?.name
+    );
+
+    return (
+      category === "notebooks" &&
+      (
+        name === "hindi notebook" ||
+        name === "english notebook" ||
+        name === "maths notebook"
       )
-        .trim()
-        .toLowerCase();
+    );
+  };
 
-      const productType = String(product.type || "")
-        .trim()
-        .toLowerCase();
+  /* =====================================================
+     PRODUCT GROUP KEY
+  ===================================================== */
 
-      const selectedCategoryName = String(category)
-        .trim()
-        .toLowerCase();
+  const getProductGroupKey = (product) => {
+    const category = normalizeValue(
+      product?.category
+    );
 
-      return (
-        productCategory === selectedCategoryName ||
-        productType === selectedCategoryName
-      );
+    const type = normalizeValue(
+      product?.type
+    );
+
+    const size = normalizeValue(
+      product?.size
+    );
+
+    const price = Number(
+      product?.price || 0
+    );
+
+    /*
+      SPECIAL NOTEBOOK GROUP
+
+      Example:
+
+      Hindi Notebook ₹10
+      English Notebook ₹10
+      Maths Notebook ₹10
+
+      becomes:
+
+      Notebook ₹10
+    */
+
+    if (isSubjectNotebook(product)) {
+      return [
+        category,
+        "subject-notebook",
+        price,
+        size,
+        type,
+        product?.pages || "",
+      ].join("|");
+    }
+
+    /*
+      GENERIC GROUP
+
+      Same:
+      category
+      name
+      price
+      size
+      type
+
+      = one product card
+    */
+
+    const name = normalizeValue(
+      product?.name
+    );
+
+    return [
+      category,
+      name,
+      price,
+      size,
+      type,
+    ].join("|");
+  };
+
+  /* =====================================================
+     GROUP PRODUCTS
+  ===================================================== */
+
+  const groupProducts = (products) => {
+    const groups = new Map();
+
+    products.forEach((product) => {
+      const key =
+        getProductGroupKey(product);
+
+      if (!groups.has(key)) {
+        groups.set(key, []);
+      }
+
+      groups.get(key).push(product);
+    });
+
+    return Array.from(
+      groups.values()
+    ).map((variants) => {
+      const mainProduct = variants[0];
+
+      const subjectNotebookGroup =
+        variants.length > 1 &&
+        variants.every((variant) =>
+          isSubjectNotebook(variant)
+        );
+
+      return {
+        ...mainProduct,
+
+        name: subjectNotebookGroup
+          ? "Notebook"
+          : mainProduct.name,
+
+        variants,
+
+        variantCount:
+          variants.length,
+
+        hasVariants:
+          variants.length > 1,
+      };
     });
   };
 
-  // =========================================================
-  // TRENDING PRODUCTS
-  // =========================================================
+  /* =====================================================
+     GROUPED PRODUCTS
+  ===================================================== */
+
+  const groupedProducts = useMemo(
+    () => groupProducts(allProducts),
+    [allProducts]
+  );
+
+  /* =====================================================
+     CATEGORY PRODUCTS
+  ===================================================== */
+
+  const getCategoryProducts = (
+    category
+  ) => {
+    const selectedCategoryName =
+      normalizeValue(category);
+
+    const filtered =
+      websiteProducts.filter(
+        (product) => {
+          const productCategory =
+            normalizeValue(
+              product?.category
+            );
+
+          const productType =
+            normalizeValue(
+              product?.type
+            );
+
+          return (
+            productCategory ===
+              selectedCategoryName ||
+            productType ===
+              selectedCategoryName
+          );
+        }
+      );
+
+    return groupProducts(filtered);
+  };
+
+  /* =====================================================
+     TRENDING PRODUCTS
+  ===================================================== */
 
   const websiteTrendingProducts =
     dbProducts.length > 0
-      ? dbProducts.filter((product) => {
-          const category = String(
-            product.category || ""
-          ).toLowerCase();
+      ? dbProducts.filter(
+          (product) => {
+            const category =
+              normalizeValue(
+                product?.category
+              );
 
-          const type = String(
-            product.type || ""
-          ).toLowerCase();
+            const type =
+              normalizeValue(
+                product?.type
+              );
 
-          const name = String(
-            product.name || ""
-          ).toLowerCase();
+            const name =
+              normalizeValue(
+                product?.name
+              );
 
-          return (
-            category.includes("trending") ||
-            type.includes("trending") ||
-            name.includes("trending")
-          );
-        })
+            return (
+              category.includes("trending") ||
+              type.includes("trending") ||
+              name.includes("trending")
+            );
+          }
+        )
       : trendingProducts;
 
-  // =========================================================
-  // HOME
-  // =========================================================
+  const groupedTrendingProducts =
+    groupProducts(
+      websiteTrendingProducts
+    );
 
-  const goHome = (addHistory = true) => {
+  /* =====================================================
+     GO HOME
+  ===================================================== */
+
+  const goHome = (
+    addHistory = true
+  ) => {
     if (addHistory) {
       window.history.pushState(
         { page: "home" },
@@ -174,10 +385,14 @@ function App() {
 
     setSelectedCategory(null);
     setSelectedProductSection(null);
+    setSelectedProduct(null);
     setSearchTerm("");
+
     setIsCartOpen(false);
     setIsCheckoutOpen(false);
+
     setOrderConfirmation(null);
+
     setAdminLogin(false);
     setIsAdminLoggedIn(false);
 
@@ -187,22 +402,32 @@ function App() {
     });
   };
 
-  // =========================================================
-  // BROWSER HISTORY
-  // =========================================================
+  /* =====================================================
+     BROWSER BACK / FORWARD
+  ===================================================== */
 
   useEffect(() => {
     const handlePopState = (event) => {
-      const page = event.state?.page;
+      const state =
+        event.state || {};
 
-      // HOME
-      if (!page || page === "home") {
+      const page =
+        state.page;
+
+      if (
+        !page ||
+        page === "home"
+      ) {
         setSelectedCategory(null);
         setSelectedProductSection(null);
+        setSelectedProduct(null);
         setSearchTerm("");
+
         setIsCartOpen(false);
         setIsCheckoutOpen(false);
+
         setOrderConfirmation(null);
+
         setAdminLogin(false);
         setIsAdminLoggedIn(false);
 
@@ -214,45 +439,17 @@ function App() {
         return;
       }
 
-      // CATEGORY
-      if (page === "category") {
-        setSelectedCategory(event.state.category);
-        setSelectedProductSection(null);
-        setSearchTerm("");
-        setIsCartOpen(false);
-        setIsCheckoutOpen(false);
-
-        window.scrollTo({
-          top: 0,
-          behavior: "smooth",
-        });
-
-        return;
-      }
-
-      // SEARCH
-      if (page === "search") {
-        setSearchTerm(event.state.searchTerm || "");
-        setSelectedCategory(null);
-        setSelectedProductSection(null);
-        setIsCartOpen(false);
-        setIsCheckoutOpen(false);
-
-        window.scrollTo({
-          top: 0,
-          behavior: "smooth",
-        });
-
-        return;
-      }
-
-      // TRENDING / PRODUCT SECTION
-      if (page === "product-section") {
-        setSelectedProductSection(
-          event.state.productSection
+      if (
+        page === "category"
+      ) {
+        setSelectedCategory(
+          state.category
         );
-        setSelectedCategory(null);
+
+        setSelectedProductSection(null);
+        setSelectedProduct(null);
         setSearchTerm("");
+
         setIsCartOpen(false);
         setIsCheckoutOpen(false);
 
@@ -264,15 +461,86 @@ function App() {
         return;
       }
 
-      // CART
-      if (page === "cart") {
+      if (
+        page === "search"
+      ) {
+        setSearchTerm(
+          state.searchTerm || ""
+        );
+
+        setSelectedCategory(null);
+        setSelectedProductSection(null);
+        setSelectedProduct(null);
+
+        setIsCartOpen(false);
+        setIsCheckoutOpen(false);
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+
+        return;
+      }
+
+      if (
+        page === "product-section"
+      ) {
+        setSelectedProductSection(
+          state.productSection
+        );
+
+        setSelectedCategory(null);
+        setSelectedProduct(null);
+        setSearchTerm("");
+
+        setIsCartOpen(false);
+        setIsCheckoutOpen(false);
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+
+        return;
+      }
+
+      if (
+        page === "product-details"
+      ) {
+        setSelectedProduct(
+          state.product
+        );
+
+        setSelectedCategory(null);
+        setSelectedProductSection(null);
+        setSearchTerm("");
+
+        setIsCartOpen(false);
+        setIsCheckoutOpen(false);
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+
+        return;
+      }
+
+      if (
+        page === "cart"
+      ) {
+        setSelectedProduct(null);
         setIsCartOpen(true);
         setIsCheckoutOpen(false);
+
         return;
       }
 
-      // CHECKOUT
-      if (page === "checkout") {
+      if (
+        page === "checkout"
+      ) {
+        setSelectedProduct(null);
         setIsCartOpen(false);
         setIsCheckoutOpen(true);
 
@@ -284,13 +552,27 @@ function App() {
         return;
       }
 
-      // ADMIN LOGIN
-      if (page === "admin-login") {
+      if (
+        page === "order-confirmation"
+      ) {
+        setSelectedProduct(null);
+        setIsCartOpen(false);
+        setIsCheckoutOpen(false);
+
+        return;
+      }
+
+      if (
+        page === "admin-login"
+      ) {
         setAdminLogin(true);
         setIsAdminLoggedIn(false);
+
         setSelectedCategory(null);
         setSelectedProductSection(null);
+        setSelectedProduct(null);
         setSearchTerm("");
+
         setIsCartOpen(false);
         setIsCheckoutOpen(false);
 
@@ -302,13 +584,17 @@ function App() {
         return;
       }
 
-      // ADMIN
-      if (page === "admin") {
+      if (
+        page === "admin"
+      ) {
         setIsAdminLoggedIn(true);
         setAdminLogin(false);
+
         setSelectedCategory(null);
         setSelectedProductSection(null);
+        setSelectedProduct(null);
         setSearchTerm("");
+
         setIsCartOpen(false);
         setIsCheckoutOpen(false);
 
@@ -332,66 +618,30 @@ function App() {
     };
   }, []);
 
-  // =========================================================
-  // ADD TO CART
-  // =========================================================
+  /* =====================================================
+     OPEN PRODUCT DETAILS
+  ===================================================== */
 
-  const addToCart = (product) => {
-    setCart((currentCart) => {
-      const productId =
-        product._id || product.id;
+  const openProductDetails = (
+    product
+  ) => {
+    if (!product) {
+      return;
+    }
 
-      const existingProduct =
-        currentCart.find(
-          (item) =>
-            (item._id || item.id) === productId
-        );
+    setSelectedProduct(product);
 
-      if (existingProduct) {
-        return currentCart.map((item) =>
-          (item._id || item.id) === productId
-            ? {
-                ...item,
-                quantity:
-                  Number(item.quantity || 0) + 1,
-              }
-            : item
-        );
-      }
-
-      return [
-        ...currentCart,
-        {
-          ...product,
-          quantity: 1,
-        },
-      ];
-    });
-  };
-
-  // =========================================================
-  // CATEGORY
-  // =========================================================
-
-  const openCategory = (category) => {
-    const products =
-      getCategoryProducts(category);
-
-    const categoryData = {
-      name: category,
-      products,
-    };
-
-    setSelectedCategory(categoryData);
+    setSelectedCategory(null);
     setSelectedProductSection(null);
     setSearchTerm("");
+
     setIsCartOpen(false);
     setIsCheckoutOpen(false);
 
     window.history.pushState(
       {
-        page: "category",
-        category: categoryData,
+        page: "product-details",
+        product,
       },
       "",
       window.location.pathname
@@ -403,25 +653,246 @@ function App() {
     });
   };
 
+  /* =====================================================
+     BACK FROM PRODUCT DETAILS
+  ===================================================== */
+
+  const backFromProductDetails =
+    () => {
+      if (
+        window.history.state
+          ?.page ===
+        "product-details"
+      ) {
+        window.history.back();
+      } else {
+        goHome(true);
+      }
+    };
+
+  /* =====================================================
+     ADD TO CART
+  ===================================================== */
+
+  const addToCart = (
+    product,
+    quantity = 1
+  ) => {
+    if (!product) {
+      return;
+    }
+
+    const productId =
+      getProductId(product);
+
+    const requestedQuantity =
+      Number(quantity) || 1;
+
+    setCart(
+      (currentCart) => {
+        const existingProduct =
+          currentCart.find(
+            (item) =>
+              getProductId(item) ===
+              productId
+          );
+
+        if (existingProduct) {
+          return currentCart.map(
+            (item) =>
+              getProductId(item) ===
+              productId
+                ? {
+                    ...item,
+                    quantity:
+                      Number(
+                        item.quantity || 0
+                      ) +
+                      requestedQuantity,
+                  }
+                : item
+          );
+        }
+
+        return [
+          ...currentCart,
+          {
+            ...product,
+            quantity:
+              requestedQuantity,
+          },
+        ];
+      }
+    );
+  };
+
+  /* =====================================================
+     COMMON ADD TO CART HANDLER
+     
+     SAME FUNCTION IS USED BY:
+     HOME
+     TRENDING
+     CATEGORY
+     SEARCH
+     PRODUCT DETAILS
+  ===================================================== */
+
+  const handleProductAddToCart = (
+    product,
+    quantity = 1
+  ) => {
+    if (!product) {
+      return;
+    }
+
+    addToCart(
+      product,
+      quantity
+    );
+
+    setIsCartOpen(false);
+    setIsCheckoutOpen(false);
+
+    setCartToast({
+      product,
+      quantity,
+    });
+  };
+
+  /* =====================================================
+     CART TOAST
+  ===================================================== */
+
+  useEffect(() => {
+    if (!cartToast) {
+      return undefined;
+    }
+
+    const timer = setTimeout(() => {
+      setCartToast(null);
+    }, 3500);
+
+    return () => clearTimeout(timer);
+  }, [cartToast]);
+
+  const closeCartToast = () => {
+    setCartToast(null);
+  };
+
+  const handleToastViewCart = () => {
+    setCartToast(null);
+    openCart();
+  };
+
+  const renderCartToast = () => {
+    if (!cartToast) {
+      return null;
+    }
+
+    return (
+      <div className="cart-toast">
+        <div className="cart-toast__icon">
+          ✓
+        </div>
+
+        <div className="cart-toast__content">
+          <strong>Added to Cart</strong>
+          <span>
+            {cartToast.product?.name || "Product"} × {cartToast.quantity || 1}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          className="cart-toast__button"
+          onClick={handleToastViewCart}
+        >
+          View Cart →
+        </button>
+
+        <button
+          type="button"
+          className="cart-toast__close"
+          onClick={closeCartToast}
+          aria-label="Close cart notification"
+        >
+          ×
+        </button>
+      </div>
+    );
+  };
+
+  /* =====================================================
+     OPEN CATEGORY
+  ===================================================== */
+
+  const openCategory = (
+    category
+  ) => {
+    const products =
+      getCategoryProducts(
+        category
+      );
+
+    const categoryData = {
+      name: category,
+      products,
+    };
+
+    setSelectedCategory(
+      categoryData
+    );
+
+    setSelectedProductSection(null);
+    setSelectedProduct(null);
+    setSearchTerm("");
+
+    setIsCartOpen(false);
+    setIsCheckoutOpen(false);
+
+    window.history.pushState(
+      {
+        page: "category",
+        category:
+          categoryData,
+      },
+      "",
+      window.location.pathname
+    );
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  /* =====================================================
+     CLEAR CATEGORY
+  ===================================================== */
+
   const clearCategory = () => {
     window.history.back();
   };
 
-  // =========================================================
-  // SEARCH
-  // =========================================================
+  /* =====================================================
+     SEARCH
+  ===================================================== */
 
-  const handleSearch = (value) => {
+  const handleSearch = (
+    value
+  ) => {
     setSearchTerm(value);
 
     setSelectedCategory(null);
     setSelectedProductSection(null);
+    setSelectedProduct(null);
 
     if (value.trim()) {
       window.history.replaceState(
         {
           page: "search",
-          searchTerm: value,
+          searchTerm:
+            value,
         },
         "",
         window.location.pathname
@@ -434,35 +905,117 @@ function App() {
     });
   };
 
+  /* =====================================================
+     CLEAR SEARCH
+  ===================================================== */
+
   const clearSearch = () => {
     window.history.back();
   };
 
-  // =========================================================
-  // TRENDING
-  // =========================================================
+  /* =====================================================
+     TRENDING VIEW ALL
+  ===================================================== */
 
-  const openTrendingProducts = () => {
-    const productSection = {
-      title: "Trending Products",
-      eyebrow: "WHAT'S POPULAR",
-      products: websiteTrendingProducts,
-      isTrending: true,
+  const openTrendingProducts =
+    () => {
+      const productSection = {
+        title:
+          "Trending Products",
+
+        eyebrow:
+          "WHAT'S POPULAR",
+
+        products:
+          groupedTrendingProducts,
+
+        isTrending: true,
+      };
+
+      setSelectedProductSection(
+        productSection
+      );
+
+      setSelectedCategory(null);
+      setSelectedProduct(null);
+      setSearchTerm("");
+
+      setIsCartOpen(false);
+      setIsCheckoutOpen(false);
+
+      window.history.pushState(
+        {
+          page:
+            "product-section",
+
+          productSection,
+        },
+        "",
+        window.location.pathname
+      );
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
     };
 
-    setSelectedProductSection(
-      productSection
-    );
+  /* =====================================================
+     CLEAR PRODUCT SECTION
+  ===================================================== */
 
-    setSelectedCategory(null);
-    setSearchTerm("");
-    setIsCartOpen(false);
+  const clearProductSection =
+    () => {
+      window.history.back();
+    };
+
+  /* =====================================================
+     OPEN CART
+  ===================================================== */
+
+  const openCart = () => {
+    setSelectedProduct(null);
+
+    setIsCartOpen(true);
     setIsCheckoutOpen(false);
 
     window.history.pushState(
       {
-        page: "product-section",
-        productSection,
+        page: "cart",
+      },
+      "",
+      window.location.pathname
+    );
+  };
+
+  /* =====================================================
+     CLOSE CART
+  ===================================================== */
+
+  const closeCart = () => {
+    if (
+      window.history.state
+        ?.page === "cart"
+    ) {
+      window.history.back();
+    } else {
+      setIsCartOpen(false);
+    }
+  };
+
+  /* =====================================================
+     OPEN CHECKOUT
+  ===================================================== */
+
+  const openCheckout = () => {
+    setSelectedProduct(null);
+
+    setIsCartOpen(false);
+    setIsCheckoutOpen(true);
+
+    window.history.pushState(
+      {
+        page: "checkout",
       },
       "",
       window.location.pathname
@@ -474,52 +1027,9 @@ function App() {
     });
   };
 
-  const clearProductSection = () => {
-    window.history.back();
-  };
-
-  // =========================================================
-  // CART
-  // =========================================================
-
-  const openCart = () => {
-    setIsCartOpen(true);
-    setIsCheckoutOpen(false);
-
-    window.history.pushState(
-      { page: "cart" },
-      "",
-      window.location.pathname
-    );
-  };
-
-  const closeCart = () => {
-    if (window.history.state?.page === "cart") {
-      window.history.back();
-    } else {
-      setIsCartOpen(false);
-    }
-  };
-
-  // =========================================================
-  // CHECKOUT
-  // =========================================================
-
-  const openCheckout = () => {
-    setIsCartOpen(false);
-    setIsCheckoutOpen(true);
-
-    window.history.pushState(
-      { page: "checkout" },
-      "",
-      window.location.pathname
-    );
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
+  /* =====================================================
+     BACK TO CART
+  ===================================================== */
 
   const backToCart = () => {
     setIsCheckoutOpen(false);
@@ -528,18 +1038,21 @@ function App() {
     window.history.back();
   };
 
-  // =========================================================
-  // PLACE ORDER
-  // =========================================================
+  /* =====================================================
+     PLACE ORDER
+  ===================================================== */
 
-  const handlePlaceOrder = (customer) => {
-    const subtotal = cart.reduce(
-      (total, item) =>
-        total +
-        Number(item.price || 0) *
-          Number(item.quantity || 0),
-      0
-    );
+  const handlePlaceOrder = async (
+    customer
+  ) => {
+    const subtotal =
+      cart.reduce(
+        (total, item) =>
+          total +
+          Number(item.price || 0) *
+            Number(item.quantity || 0),
+        0
+      );
 
     const area = String(
       customer.area || ""
@@ -568,21 +1081,111 @@ function App() {
 
     const newOrderId =
       "SB" +
-      Date.now()
-        .toString()
-        .slice(-6);
+      Date.now().toString().slice(-6);
 
-    const orderItems = cart
-      .map(
-        (item) =>
-          `• ${item.name} x ${
-            item.quantity
-          } = ₹${
-            Number(item.price || 0) *
-            Number(item.quantity || 0)
-          }`
-      )
-      .join("\n");
+    /* =====================================================
+       ORDER ITEMS
+    ===================================================== */
+
+    const orderItems = cart.map(
+      (item) => ({
+        productId: String(
+          item._id || item.id || ""
+        ),
+        name: item.name || "",
+        image: item.image || "",
+        price: Number(item.price || 0),
+        quantity: Number(
+          item.quantity || 0
+        ),
+      })
+    );
+
+    /* =====================================================
+       SAVE ORDER TO MONGODB
+    ===================================================== */
+
+    try {
+      console.log(
+        "Sending order to:",
+        ORDERS_API_URL
+      );
+
+      const response = await fetch(
+        ORDERS_API_URL,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify({
+            customer: {
+              name: customer.name,
+              mobile: customer.phone,
+              address: customer.address,
+              area: customer.area,
+            },
+
+            items: orderItems,
+
+            subtotal,
+            deliveryCharge,
+            total: totalAmount,
+
+            paymentMethod: "COD",
+          }),
+        }
+      );
+
+      const data =
+        await response.json();
+
+      console.log(
+        "Order API response:",
+        data
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            "Failed to place order"
+        );
+      }
+
+      console.log(
+        "Order saved successfully:",
+        data.order
+      );
+    } catch (error) {
+      console.error(
+        "Order save error:",
+        error
+      );
+
+      alert(
+        "Order save nahi ho paya. Please try again."
+      );
+
+      return;
+    }
+
+    /* =====================================================
+       WHATSAPP ORDER MESSAGE
+    ===================================================== */
+
+    const orderItemsMessage =
+      cart
+        .map(
+          (item) =>
+            `• ${item.name} x ${item.quantity} = ₹${
+              Number(item.price || 0) *
+              Number(item.quantity || 0)
+            }`
+        )
+        .join("\n");
 
     const message = `
 🛍️ *NEW ORDER - SHANKAR BOOK STORE*
@@ -601,7 +1204,7 @@ Address: ${customer.address}
 
 🛒 *ORDER ITEMS*
 
-${orderItems}
+${orderItemsMessage}
 
 💰 *SUBTOTAL:* ₹${subtotal}
 
@@ -628,6 +1231,10 @@ Thank you!
       "_blank"
     );
 
+    /* =====================================================
+       ORDER CONFIRMATION
+    ===================================================== */
+
     setOrderConfirmation({
       customer,
       cart,
@@ -641,8 +1248,13 @@ Thank you!
 
     setIsCheckoutOpen(false);
 
+    setSelectedProduct(null);
+
     window.history.pushState(
-      { page: "order-confirmation" },
+      {
+        page:
+          "order-confirmation",
+      },
       "",
       window.location.pathname
     );
@@ -653,109 +1265,132 @@ Thank you!
     });
   };
 
-  // =========================================================
-  // CONTINUE SHOPPING
-  // =========================================================
+  /* =====================================================
+     CONTINUE SHOPPING
+  ===================================================== */
 
-  const continueShopping = () => {
-    goHome(true);
-  };
+  const continueShopping =
+    () => {
+      goHome(true);
+    };
 
-  // =========================================================
-  // ADMIN LOGIN
-  // =========================================================
+  /* =====================================================
+     ADMIN LOGIN
+  ===================================================== */
 
-  const openAdminLogin = () => {
-    setAdminLogin(true);
-    setIsAdminLoggedIn(false);
+  const openAdminLogin =
+    () => {
+      setAdminLogin(true);
+      setIsAdminLoggedIn(false);
 
-    setSelectedCategory(null);
-    setSelectedProductSection(null);
-    setSearchTerm("");
-    setIsCartOpen(false);
-    setIsCheckoutOpen(false);
+      setSelectedCategory(null);
+      setSelectedProductSection(null);
+      setSelectedProduct(null);
+      setSearchTerm("");
 
-    window.history.pushState(
-      { page: "admin-login" },
-      "",
-      window.location.pathname
-    );
+      setIsCartOpen(false);
+      setIsCheckoutOpen(false);
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
+      window.history.pushState(
+        {
+          page:
+            "admin-login",
+        },
+        "",
+        window.location.pathname
+      );
 
-  // =========================================================
-  // ADMIN LOGIN SUCCESS
-  // =========================================================
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    };
 
-  const handleAdminLogin = () => {
-    setIsAdminLoggedIn(true);
-    setAdminLogin(false);
+  /* =====================================================
+     ADMIN LOGIN SUCCESS
+  ===================================================== */
 
-    window.history.pushState(
-      { page: "admin" },
-      "",
-      window.location.pathname
-    );
+  const handleAdminLogin =
+    () => {
+      setIsAdminLoggedIn(true);
+      setAdminLogin(false);
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
+      window.history.pushState(
+        {
+          page: "admin",
+        },
+        "",
+        window.location.pathname
+      );
 
-  // =========================================================
-  // ADMIN LOGOUT
-  // =========================================================
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    };
 
-  const handleAdminLogout = () => {
-    setIsAdminLoggedIn(false);
-    setAdminLogin(false);
+  /* =====================================================
+     ADMIN LOGOUT
+  ===================================================== */
 
-    setSelectedCategory(null);
-    setSelectedProductSection(null);
-    setSearchTerm("");
-    setIsCartOpen(false);
-    setIsCheckoutOpen(false);
+  const handleAdminLogout =
+    () => {
+      setIsAdminLoggedIn(false);
+      setAdminLogin(false);
 
-    window.history.pushState(
-      { page: "home" },
-      "",
-      window.location.pathname
-    );
+      setSelectedCategory(null);
+      setSelectedProductSection(null);
+      setSelectedProduct(null);
+      setSearchTerm("");
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
+      setIsCartOpen(false);
+      setIsCheckoutOpen(false);
 
-  // =========================================================
-  // ADMIN
-  // =========================================================
+      window.history.pushState(
+        {
+          page: "home",
+        },
+        "",
+        window.location.pathname
+      );
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    };
+
+  /* =====================================================
+     ADMIN
+  ===================================================== */
 
   if (isAdminLoggedIn) {
     return (
       <Admin
-        onLogout={handleAdminLogout}
+        onLogout={
+          handleAdminLogout
+        }
       />
     );
   }
+
+  /* =====================================================
+     ADMIN LOGIN
+  ===================================================== */
 
   if (adminLogin) {
     return (
       <AdminLogin
-        onLogin={handleAdminLogin}
+        onLogin={
+          handleAdminLogin
+        }
       />
     );
   }
 
-  // =========================================================
-  // ORDER CONFIRMATION
-  // =========================================================
+  /* =====================================================
+     ORDER CONFIRMATION
+  ===================================================== */
 
   if (orderConfirmation) {
     return (
@@ -763,7 +1398,9 @@ Thank you!
         customer={
           orderConfirmation.customer
         }
-        cart={orderConfirmation.cart}
+        cart={
+          orderConfirmation.cart
+        }
         totalAmount={
           orderConfirmation.totalAmount
         }
@@ -777,66 +1414,157 @@ Thank you!
     );
   }
 
-  // =========================================================
-  // CHECKOUT
-  // =========================================================
+  /* =====================================================
+     PRODUCT DETAILS
+  ===================================================== */
 
-  if (isCheckoutOpen) {
-    return (
-      <Checkout
-        cart={cart}
-        onBackToCart={backToCart}
-        onPlaceOrder={handlePlaceOrder}
-      />
-    );
-  }
-
-  // =========================================================
-  // SEARCH RESULTS
-  // =========================================================
-
-  if (searchTerm.trim()) {
+  if (selectedProduct) {
     return (
       <div>
         <Navbar
           cart={cart}
-          onCartClick={openCart}
-          onSearch={handleSearch}
-          searchTerm={searchTerm}
-          onHomeClick={() => goHome(true)}
+          onCartClick={
+            openCart
+          }
+          onSearch={
+            handleSearch
+          }
+          searchTerm={
+            searchTerm
+          }
+          onHomeClick={() =>
+            goHome(true)
+          }
         />
 
-        <SearchResults
-          searchTerm={searchTerm}
-          addToCart={addToCart}
-          onClearSearch={clearSearch}
-          products={allProducts}
+        <ProductDetails
+          product={
+            selectedProduct
+          }
+          onAddToCart={
+            handleProductAddToCart
+          }
+          onBack={
+            backFromProductDetails
+          }
         />
 
         <Cart
           cart={cart}
           setCart={setCart}
           isOpen={isCartOpen}
-          onClose={closeCart}
-          onCheckout={openCheckout}
+          onClose={
+            closeCart
+          }
+          onCheckout={
+            openCheckout
+          }
         />
+
+        {renderCartToast()}
       </div>
     );
   }
 
-  // =========================================================
-  // CATEGORY RESULTS
-  // =========================================================
+  /* =====================================================
+     CHECKOUT
+  ===================================================== */
+
+  if (isCheckoutOpen) {
+    return (
+      <Checkout
+        cart={cart}
+        onBackToCart={
+          backToCart
+        }
+        onPlaceOrder={
+          handlePlaceOrder
+        }
+      />
+    );
+  }
+
+  /* =====================================================
+     SEARCH RESULTS
+  ===================================================== */
+
+  if (searchTerm.trim()) {
+    return (
+      <div>
+        <Navbar
+          cart={cart}
+          onCartClick={
+            openCart
+          }
+          onSearch={
+            handleSearch
+          }
+          searchTerm={
+            searchTerm
+          }
+          onHomeClick={() =>
+            goHome(true)
+          }
+        />
+
+        <SearchResults
+          searchTerm={
+            searchTerm
+          }
+          onProductClick={
+            openProductDetails
+          }
+          onClearSearch={
+            clearSearch
+          }
+          onAddToCart={
+            handleProductAddToCart
+          }
+          products={
+            groupProducts(
+              allProducts
+            )
+          }
+        />
+
+        <Cart
+          cart={cart}
+          setCart={setCart}
+          isOpen={isCartOpen}
+          onClose={
+            closeCart
+          }
+          onCheckout={
+            openCheckout
+          }
+        />
+
+        {renderCartToast()}
+      </div>
+    );
+  }
+
+  /* =====================================================
+     CATEGORY RESULTS
+  ===================================================== */
 
   if (selectedCategory) {
     return (
       <div>
         <Navbar
           cart={cart}
-          onCartClick={openCart}
-          onSearch={handleSearch}
-          searchTerm={searchTerm}
-          onHomeClick={() => goHome(true)}
+          onCartClick={
+            openCart
+          }
+          onSearch={
+            handleSearch
+          }
+          searchTerm={
+            searchTerm
+          }
+          onHomeClick={() =>
+            goHome(true)
+          }
         />
 
         <CategoryResults
@@ -846,9 +1574,14 @@ Thank you!
           products={
             selectedCategory.products
           }
-          addToCart={addToCart}
+          onProductClick={
+            openProductDetails
+          }
           onClearCategory={
             clearCategory
+          }
+          onAddToCart={
+            handleProductAddToCart
           }
         />
 
@@ -856,26 +1589,42 @@ Thank you!
           cart={cart}
           setCart={setCart}
           isOpen={isCartOpen}
-          onClose={closeCart}
-          onCheckout={openCheckout}
+          onClose={
+            closeCart
+          }
+          onCheckout={
+            openCheckout
+          }
         />
+
+        {renderCartToast()}
       </div>
     );
   }
 
-  // =========================================================
-  // PRODUCT SECTION RESULTS
-  // =========================================================
+  /* =====================================================
+     PRODUCT SECTION / VIEW ALL
+  ===================================================== */
 
-  if (selectedProductSection) {
+  if (
+    selectedProductSection
+  ) {
     return (
       <div>
         <Navbar
           cart={cart}
-          onCartClick={openCart}
-          onSearch={handleSearch}
-          searchTerm={searchTerm}
-          onHomeClick={() => goHome(true)}
+          onCartClick={
+            openCart
+          }
+          onSearch={
+            handleSearch
+          }
+          searchTerm={
+            searchTerm
+          }
+          onHomeClick={() =>
+            goHome(true)
+          }
         />
 
         <CategoryResults
@@ -885,9 +1634,14 @@ Thank you!
           products={
             selectedProductSection.products
           }
-          addToCart={addToCart}
+          onProductClick={
+            openProductDetails
+          }
           onClearCategory={
             clearProductSection
+          }
+          onAddToCart={
+            handleProductAddToCart
           }
         />
 
@@ -895,31 +1649,47 @@ Thank you!
           cart={cart}
           setCart={setCart}
           isOpen={isCartOpen}
-          onClose={closeCart}
-          onCheckout={openCheckout}
+          onClose={
+            closeCart
+          }
+          onCheckout={
+            openCheckout
+          }
         />
+
+        {renderCartToast()}
       </div>
     );
   }
 
-  // =========================================================
-  // HOME
-  // =========================================================
+  /* =====================================================
+     HOME PAGE
+  ===================================================== */
 
   return (
     <div>
       <Navbar
         cart={cart}
-        onCartClick={openCart}
-        onSearch={handleSearch}
-        searchTerm={searchTerm}
-        onHomeClick={() => goHome(true)}
+        onCartClick={
+          openCart
+        }
+        onSearch={
+          handleSearch
+        }
+        searchTerm={
+          searchTerm
+        }
+        onHomeClick={() =>
+          goHome(true)
+        }
       />
 
       <Hero />
 
       <CategorySection
-        onCategoryClick={openCategory}
+        onCategoryClick={
+          openCategory
+        }
       />
 
       {productsLoading ? (
@@ -935,98 +1705,110 @@ Thank you!
         </div>
       ) : (
         <>
+          {/* ================= TRENDING ================= */}
+
           <ProductSection
             title="Trending Products"
             eyebrow="WHAT'S POPULAR"
             products={
-              websiteTrendingProducts
+              groupedTrendingProducts
             }
-            onAddToCart={addToCart}
+            onProductClick={
+              openProductDetails
+            }
+            onAddToCart={
+              handleProductAddToCart
+            }
             onViewAll={
               openTrendingProducts
             }
           />
 
+          {/* ================= FRAMES ================= */}
+
           <ProductSection
             title="Frames"
             eyebrow="SPECIAL MOMENTS"
-            products={websiteProducts.filter(
-              (product) => {
-                const category =
-                  String(
-                    product.category || ""
-                  ).toLowerCase();
+            products={groupProducts(
+              websiteProducts.filter(
+                (product) => {
+                  const category =
+                    normalizeValue(
+                      product?.category
+                    );
 
-                return (
-                  category ===
-                    "photo frames" ||
-                  category ===
-                    "resin frames"
-                );
-              }
+                  return (
+                    category ===
+                      "photo frames" ||
+                    category ===
+                      "resin frames"
+                  );
+                }
+              )
             )}
-            onAddToCart={addToCart}
+            onProductClick={
+              openProductDetails
+            }
+            onAddToCart={
+              handleProductAddToCart
+            }
           />
 
-          <ProductSection
-            title="Water Bottles"
-            eyebrow="EVERYDAY ESSENTIALS"
-            products={websiteProducts.filter(
-              (product) => {
-                const category =
-                  String(
-                    product.category || ""
-                  ).toLowerCase();
-
-                return (
-                  category ===
-                    "bottles & tiffins" ||
-                  category.includes(
-                    "bottle"
-                  )
-                );
-              }
-            )}
-            onAddToCart={addToCart}
-          />
-
-          <ProductSection
-            title="Notebooks"
-            eyebrow="WRITE IT DOWN"
-            products={websiteProducts.filter(
-              (product) =>
-                String(
-                  product.category || ""
-                ).toLowerCase() ===
-                "notebooks"
-            )}
-            onAddToCart={addToCart}
-          />
-
-          <ProductSection
-            title="Pens & Writing"
-            eyebrow="WRITE WITH STYLE"
-            products={websiteProducts.filter(
-              (product) =>
-                String(
-                  product.category || ""
-                ).toLowerCase() ===
-                "pens & writing"
-            )}
-            onAddToCart={addToCart}
-          />
+          {/* ================= KEYCHAINS ================= */}
 
           <ProductSection
             title="Keychains"
             eyebrow="SMALL & STYLISH"
-            products={websiteProducts.filter(
-              (product) =>
-                String(
-                  product.category || ""
-                ).toLowerCase() ===
-                "keychains"
+            products={groupProducts(
+              websiteProducts.filter(
+                (product) =>
+                  normalizeValue(
+                    product?.category
+                  ) ===
+                  "keychains"
+              )
             )}
-            onAddToCart={addToCart}
+            onProductClick={
+              openProductDetails
+            }
+            onAddToCart={
+              handleProductAddToCart
+            }
+          />
+
+          {/* ================= DAILY ESSENTIALS ================= */}
+
+          <ProductSection
+            title="Daily Essentials"
+            eyebrow="EVERYDAY ESSENTIALS"
+            products={groupProducts(
+              websiteProducts.filter(
+                (product) => {
+                  const category =
+                    normalizeValue(
+                      product?.category
+                    );
+
+                  return (
+                    category ===
+                      "bottles & tiffins" ||
+                    category.includes(
+                      "bottle"
+                    ) ||
+                    category ===
+                      "school & office" ||
+                    category ===
+                      "other stationery"
+                  );
+                }
+              )
+            )}
+            onProductClick={
+              openProductDetails
+            }
+            onAddToCart={
+              handleProductAddToCart
+            }
           />
         </>
       )}
@@ -1034,16 +1816,24 @@ Thank you!
       <OfferBanner />
 
       <Footer
-        onAdminLogin={openAdminLogin}
+        onAdminLogin={
+          openAdminLogin
+        }
       />
 
       <Cart
         cart={cart}
         setCart={setCart}
         isOpen={isCartOpen}
-        onClose={closeCart}
-        onCheckout={openCheckout}
+        onClose={
+          closeCart
+        }
+        onCheckout={
+          openCheckout
+        }
       />
+
+        {renderCartToast()}
     </div>
   );
 }
