@@ -1,7 +1,8 @@
 import { useState } from "react";
+
 import "./CategorySection.css";
 
-function CategorySection({ onCategoryClick}) {
+function CategorySection({ onCategoryClick }) {
   const [showAll, setShowAll] = useState(false);
 
   const categories = [
@@ -60,6 +61,11 @@ function CategorySection({ onCategoryClick}) {
       name: "Resin Frames",
       image: "/images/resin-frames.jpg",
     },
+    {
+      id: 12,
+      name: "Toys",
+      image: "/images/categories/toys.jpg",
+    },
   ];
 
   const handleViewAll = () => {
@@ -81,6 +87,7 @@ function CategorySection({ onCategoryClick}) {
           {showAll ? "Show Less" : "View All"}
         </button>
       </div>
+
       {!showAll ? (
         <div className="categories__scroll">
           <div className="categories__list">

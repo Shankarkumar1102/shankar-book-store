@@ -434,6 +434,10 @@ function AdminProducts({
                       <option value="Resin Frames">
                         Resin Frames
                       </option>
+
+                      <option value="Toys">
+                        Toys
+                      </option>
                     </select>
                   </div>
 

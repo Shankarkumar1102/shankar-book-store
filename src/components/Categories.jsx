@@ -57,11 +57,15 @@ function Categories({ onCategoryClick }) {
       name: "Resin Frames",
       image: "/images/resin-frames.jpg",
     },
+    {
+      id: 12,
+      name: "Toys",
+      image: "/images/categories/toys.jpg",
+    },
   ];
 
   return (
     <section className="all-categories">
-
       <div className="all-categories__header">
         <span>EXPLORE OUR COLLECTION</span>
 
