@@ -1,362 +1,1609 @@
-import { useEffect, useState } from "react";
-import "./ProductDetails.css";
+import { useEffect, useMemo, useState } from "react";
 
-function ProductDetails({
-  product,
-  onAddToCart,
-  onBack,
-}) {
-  const [quantity, setQuantity] = useState(1);
+import Navbar from "./components/Navbar";
+import Hero from "./components/Hero";
+import CategorySection from "./components/CategorySection";
+import CategoryResults from "./components/CategoryResults";
+import ProductSection from "./components/ProductSection";
+import ProductDetails from "./components/ProductDetails";
+import OfferBanner from "./components/OfferBanner";
+import Footer from "./components/Footer";
+
+import Cart from "./components/Cart";
+import Checkout from "./components/Checkout";
+import OrderConfirmation from "./components/OrderConfirmation";
+import SearchResults from "./components/SearchResults";
+
+import AdminLogin from "./pages/AdminLogin";
+import Admin from "./pages/Admin";
+
+import notebooks from "./data/notebooks";
+import pens from "./data/pens";
+import keychains from "./data/keychains";
+import resinFrames from "./data/resinFrames";
+import photoFrames from "./data/photoFrames";
+import schoolOffice from "./data/schoolOffice";
+import artCraft from "./data/artCraft";
+import pencilBoxes from "./data/pencilBoxes";
+import bottlesTiffins from "./data/bottlesTiffins";
+import otherStationery from "./data/otherStationery";
+import giftingItems from "./data/giftingItems";
+import trendingProducts from "./data/trendingProducts";
+
+/* =====================================================
+   API
+===================================================== */
+
+const API_URL =
+  "https://shankar-book-store-2.onrender.com/api/products";
+
+const ORDERS_API_URL =
+  "https://shankar-book-store-2.onrender.com/api/orders";
+
+function App() {
+  const [cart, setCart] = useState([]);
+
+  const [dbProducts, setDbProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const [
+    selectedProductSection,
+    setSelectedProductSection,
+  ] = useState(null);
+
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+
+  const [orderConfirmation, setOrderConfirmation] =
+    useState(null);
+
+  const [adminLogin, setAdminLogin] = useState(false);
+
+  const [isAdminLoggedIn, setIsAdminLoggedIn] =
+    useState(false);
+
+  /* =====================================================
+     LOAD PRODUCTS FROM BACKEND
+  ===================================================== */
 
   useEffect(() => {
-    setQuantity(1);
+    const loadProducts = async () => {
+      try {
+        const response = await fetch(API_URL);
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch products");
+        }
+
+        const data = await response.json();
+
+        setDbProducts(
+          Array.isArray(data) ? data : []
+        );
+      } catch (error) {
+        console.error("Product API error:", error);
+
+        setDbProducts([]);
+      } finally {
+        setProductsLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, []);
+
+  /* =====================================================
+     LOCAL PRODUCTS
+  ===================================================== */
+
+  const localProducts = useMemo(
+    () => [
+      ...notebooks,
+      ...pens,
+      ...schoolOffice,
+      ...artCraft,
+      ...pencilBoxes,
+      ...bottlesTiffins,
+      ...keychains,
+      ...otherStationery,
+      ...giftingItems,
+      ...photoFrames,
+      ...resinFrames,
+      ...trendingProducts,
+    ],
+    []
+  );
+
+  const websiteProducts =
+    dbProducts.length > 0
+      ? dbProducts
+      : localProducts;
+
+  const allProducts = websiteProducts;
+
+  /* =====================================================
+     HELPERS
+  ===================================================== */
+
+  const getProductId = (product) =>
+    product?._id || product?.id;
+
+  const normalizeValue = (value) =>
+    String(value || "")
+      .trim()
+      .toLowerCase();
+
+  /* =====================================================
+     CATEGORY PRODUCTS
+
+     NO GROUPING
+     EVERY PRODUCT IS SEPARATE
+  ===================================================== */
+
+  const getCategoryProducts = (category) => {
+    const selectedCategoryName =
+      normalizeValue(category);
+
+    const filtered =
+      websiteProducts.filter((product) => {
+        const productCategory =
+          normalizeValue(
+            product?.category
+          );
+
+        const productType =
+          normalizeValue(product?.type);
+
+        return (
+          productCategory ===
+            selectedCategoryName ||
+          productType ===
+            selectedCategoryName
+        );
+      });
+
+    return filtered;
+  };
+
+  /* =====================================================
+     TRENDING PRODUCTS
+
+     NO GROUPING
+  ===================================================== */
+
+  const websiteTrendingProducts =
+    dbProducts.length > 0
+      ? dbProducts.filter((product) => {
+          const category =
+            normalizeValue(
+              product?.category
+            );
+
+          const type =
+            normalizeValue(product?.type);
+
+          const name =
+            normalizeValue(product?.name);
+
+          return (
+            category.includes("trending") ||
+            type.includes("trending") ||
+            name.includes("trending")
+          );
+        })
+      : trendingProducts;
+
+  /* =====================================================
+     GO HOME
+  ===================================================== */
+
+  const goHome = (addHistory = true) => {
+    if (addHistory) {
+      window.history.pushState(
+        { page: "home" },
+        "",
+        window.location.pathname
+      );
+    }
+
+    setSelectedCategory(null);
+    setSelectedProductSection(null);
+    setSelectedProduct(null);
+    setSearchTerm("");
+
+    setIsCartOpen(false);
+    setIsCheckoutOpen(false);
+
+    setOrderConfirmation(null);
+
+    setAdminLogin(false);
+    setIsAdminLoggedIn(false);
 
     window.scrollTo({
       top: 0,
       behavior: "smooth",
     });
-  }, [product]);
-
-  if (!product) {
-    return (
-      <main className="product-details">
-        <div className="product-details__empty">
-          <h2>Product not found</h2>
-
-          <button
-            type="button"
-            onClick={onBack}
-          >
-            ← Back
-          </button>
-        </div>
-      </main>
-    );
-  }
-
-  /*
-   * =====================================================
-   * PRODUCT STOCK
-   * =====================================================
-   *
-   * Every product is now independent.
-   * No variants / grouping.
-   */
-
-  const stock = Number(product?.stock ?? 0);
-
-  /*
-   * =====================================================
-   * QUANTITY
-   * =====================================================
-   */
-
-  const increaseQuantity = () => {
-    if (stock <= 0) {
-      return;
-    }
-
-    if (quantity >= stock) {
-      return;
-    }
-
-    setQuantity(
-      (current) => current + 1
-    );
   };
 
-  const decreaseQuantity = () => {
-    setQuantity(
-      (current) =>
-        current > 1
-          ? current - 1
-          : 1
+  /* =====================================================
+     BROWSER BACK / FORWARD
+  ===================================================== */
+
+  useEffect(() => {
+    const handlePopState = (event) => {
+      const state =
+        event.state || {};
+
+      const page =
+        state.page;
+
+      if (
+        !page ||
+        page === "home"
+      ) {
+        setSelectedCategory(null);
+        setSelectedProductSection(null);
+        setSelectedProduct(null);
+        setSearchTerm("");
+
+        setIsCartOpen(false);
+        setIsCheckoutOpen(false);
+
+        setOrderConfirmation(null);
+
+        setAdminLogin(false);
+        setIsAdminLoggedIn(false);
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+
+        return;
+      }
+
+      if (page === "category") {
+        setSelectedCategory(
+          state.category
+        );
+
+        setSelectedProductSection(null);
+        setSelectedProduct(null);
+        setSearchTerm("");
+
+        setIsCartOpen(false);
+        setIsCheckoutOpen(false);
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+
+        return;
+      }
+
+      if (page === "search") {
+        setSearchTerm(
+          state.searchTerm || ""
+        );
+
+        setSelectedCategory(null);
+        setSelectedProductSection(null);
+        setSelectedProduct(null);
+
+        setIsCartOpen(false);
+        setIsCheckoutOpen(false);
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+
+        return;
+      }
+
+      if (page === "product-section") {
+        setSelectedProductSection(
+          state.productSection
+        );
+
+        setSelectedCategory(null);
+        setSelectedProduct(null);
+        setSearchTerm("");
+
+        setIsCartOpen(false);
+        setIsCheckoutOpen(false);
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+
+        return;
+      }
+
+      if (page === "product-details") {
+        setSelectedProduct(
+          state.product
+        );
+
+        setSelectedCategory(null);
+        setSelectedProductSection(null);
+        setSearchTerm("");
+
+        setIsCartOpen(false);
+        setIsCheckoutOpen(false);
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+
+        return;
+      }
+
+      if (page === "cart") {
+        setSelectedProduct(null);
+        setIsCartOpen(true);
+        setIsCheckoutOpen(false);
+
+        return;
+      }
+
+      if (page === "checkout") {
+        setSelectedProduct(null);
+        setIsCartOpen(false);
+        setIsCheckoutOpen(true);
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+
+        return;
+      }
+
+      if (page === "order-confirmation") {
+        setSelectedProduct(null);
+        setIsCartOpen(false);
+        setIsCheckoutOpen(false);
+
+        return;
+      }
+
+      if (page === "admin-login") {
+        setAdminLogin(true);
+        setIsAdminLoggedIn(false);
+
+        setSelectedCategory(null);
+        setSelectedProductSection(null);
+        setSelectedProduct(null);
+        setSearchTerm("");
+
+        setIsCartOpen(false);
+        setIsCheckoutOpen(false);
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+
+        return;
+      }
+
+      if (page === "admin") {
+        setIsAdminLoggedIn(true);
+        setAdminLogin(false);
+
+        setSelectedCategory(null);
+        setSelectedProductSection(null);
+        setSelectedProduct(null);
+        setSearchTerm("");
+
+        setIsCartOpen(false);
+        setIsCheckoutOpen(false);
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+      }
+    };
+
+    window.addEventListener(
+      "popstate",
+      handlePopState
     );
-  };
 
-  /*
-   * =====================================================
-   * ADD TO CART
-   * =====================================================
-   */
+    return () => {
+      window.removeEventListener(
+        "popstate",
+        handlePopState
+      );
+    };
+  }, []);
 
-  const handleAddToCart = () => {
+  /* =====================================================
+     OPEN PRODUCT DETAILS
+  ===================================================== */
+
+  const openProductDetails = (product) => {
     if (!product) {
       return;
     }
 
-    if (stock <= 0) {
-      return;
-    }
+    setSelectedProduct(product);
 
+    setSelectedCategory(null);
+    setSelectedProductSection(null);
+    setSearchTerm("");
+
+    setIsCartOpen(false);
+    setIsCheckoutOpen(false);
+
+    window.history.pushState(
+      {
+        page: "product-details",
+        product,
+      },
+      "",
+      window.location.pathname
+    );
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  /* =====================================================
+     BACK FROM PRODUCT DETAILS
+  ===================================================== */
+
+  const backFromProductDetails = () => {
     if (
-      typeof onAddToCart !==
-      "function"
+      window.history.state?.page ===
+      "product-details"
     ) {
+      window.history.back();
+    } else {
+      goHome(true);
+    }
+  };
+
+  /* =====================================================
+     ADD TO CART
+  ===================================================== */
+
+  const addToCart = (
+    product,
+    quantity = 1
+  ) => {
+    if (!product) {
       return;
     }
 
-    onAddToCart(
+    const productId =
+      getProductId(product);
+
+    const requestedQuantity =
+      Number(quantity) || 1;
+
+    setCart((currentCart) => {
+      const existingProduct =
+        currentCart.find(
+          (item) =>
+            getProductId(item) ===
+            productId
+        );
+
+      if (existingProduct) {
+        return currentCart.map(
+          (item) =>
+            getProductId(item) ===
+            productId
+              ? {
+                  ...item,
+                  quantity:
+                    Number(
+                      item.quantity || 0
+                    ) +
+                    requestedQuantity,
+                }
+              : item
+        );
+      }
+
+      return [
+        ...currentCart,
+        {
+          ...product,
+          quantity:
+            requestedQuantity,
+        },
+      ];
+    });
+  };
+
+  /* =====================================================
+     COMMON ADD TO CART HANDLER
+
+     IMPORTANT:
+     ADD TO CART DOES NOT OPEN CART
+
+     User stays on the current page.
+     Cart opens ONLY from View Cart / Navbar Cart.
+  ===================================================== */
+
+  const handleProductAddToCart = (
+    product,
+    quantity = 1
+  ) => {
+    if (!product) {
+      return;
+    }
+
+    addToCart(
       product,
       quantity
     );
+
+    /*
+      IMPORTANT:
+      Do NOT use:
+      setIsCartOpen(true);
+
+      Product is added to cart,
+      but cart stays closed.
+    */
+
+    setIsCartOpen(false);
+    setIsCheckoutOpen(false);
   };
 
-  /*
-   * =====================================================
-   * PRODUCT DETAILS
-   * =====================================================
-   */
+  /* =====================================================
+     OPEN CATEGORY
+  ===================================================== */
 
-  const details = [];
+  const openCategory = (category) => {
+    const products =
+      getCategoryProducts(category);
+
+    const categoryData = {
+      name: category,
+      products,
+    };
+
+    setSelectedCategory(
+      categoryData
+    );
+
+    setSelectedProductSection(null);
+    setSelectedProduct(null);
+    setSearchTerm("");
+
+    setIsCartOpen(false);
+    setIsCheckoutOpen(false);
+
+    window.history.pushState(
+      {
+        page: "category",
+        category:
+          categoryData,
+      },
+      "",
+      window.location.pathname
+    );
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  /* =====================================================
+     CLEAR CATEGORY
+  ===================================================== */
+
+  const clearCategory = () => {
+    window.history.back();
+  };
+
+  /* =====================================================
+     SEARCH
+  ===================================================== */
+
+  const handleSearch = (value) => {
+    setSearchTerm(value);
+
+    setSelectedCategory(null);
+    setSelectedProductSection(null);
+    setSelectedProduct(null);
+
+    if (value.trim()) {
+      window.history.replaceState(
+        {
+          page: "search",
+          searchTerm:
+            value,
+        },
+        "",
+        window.location.pathname
+      );
+    }
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  /* =====================================================
+     CLEAR SEARCH
+  ===================================================== */
+
+  const clearSearch = () => {
+    window.history.back();
+  };
+
+  /* =====================================================
+     TRENDING VIEW ALL
+  ===================================================== */
+
+  const openTrendingProducts = () => {
+    const productSection = {
+      title:
+        "Trending Products",
+
+      eyebrow:
+        "WHAT'S POPULAR",
+
+      products:
+        websiteTrendingProducts,
+
+      isTrending: true,
+    };
+
+    setSelectedProductSection(
+      productSection
+    );
+
+    setSelectedCategory(null);
+    setSelectedProduct(null);
+    setSearchTerm("");
+
+    setIsCartOpen(false);
+    setIsCheckoutOpen(false);
+
+    window.history.pushState(
+      {
+        page:
+          "product-section",
+
+        productSection,
+      },
+      "",
+      window.location.pathname
+    );
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  /* =====================================================
+     CLEAR PRODUCT SECTION
+  ===================================================== */
+
+  const clearProductSection = () => {
+    window.history.back();
+  };
+
+  /* =====================================================
+     OPEN CART
+
+     Cart opens only from here.
+  ===================================================== */
+
+  const openCart = () => {
+    setSelectedProduct(null);
+
+    setIsCartOpen(true);
+    setIsCheckoutOpen(false);
+
+    window.history.pushState(
+      {
+        page: "cart",
+      },
+      "",
+      window.location.pathname
+    );
+  };
+
+  /* =====================================================
+     CLOSE CART
+  ===================================================== */
+
+  const closeCart = () => {
+    if (
+      window.history.state?.page ===
+      "cart"
+    ) {
+      window.history.back();
+    } else {
+      setIsCartOpen(false);
+    }
+  };
+
+  /* =====================================================
+     OPEN CHECKOUT
+  ===================================================== */
+
+  const openCheckout = () => {
+    setSelectedProduct(null);
+
+    setIsCartOpen(false);
+    setIsCheckoutOpen(true);
+
+    window.history.pushState(
+      {
+        page: "checkout",
+      },
+      "",
+      window.location.pathname
+    );
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  /* =====================================================
+     BACK TO CART
+  ===================================================== */
+
+  const backToCart = () => {
+    setIsCheckoutOpen(false);
+    setIsCartOpen(true);
+
+    window.history.back();
+  };
+
+  /* =====================================================
+     PLACE ORDER
+  ===================================================== */
+
+  const handlePlaceOrder = async (
+    customer
+  ) => {
+    const subtotal =
+      cart.reduce(
+        (total, item) =>
+          total +
+          Number(item.price || 0) *
+            Number(item.quantity || 0),
+        0
+      );
+
+    const area = String(
+      customer.area || ""
+    )
+      .toLowerCase()
+      .trim();
+
+    let deliveryCharge = 0;
+
+    if (subtotal < 99) {
+      if (
+        area.includes("mahilong")
+      ) {
+        deliveryCharge = 10;
+      } else if (
+        area.includes("tatisilwai")
+      ) {
+        deliveryCharge = 20;
+      } else if (
+        area.includes("namkum")
+      ) {
+        deliveryCharge = 30;
+      }
+    }
+
+    const totalAmount =
+      subtotal + deliveryCharge;
+
+    const newOrderId =
+      "SB" +
+      Date.now()
+        .toString()
+        .slice(-6);
+
+    /* =====================================================
+       ORDER ITEMS
+    ===================================================== */
+
+    const orderItems = cart.map(
+      (item) => ({
+        productId: String(
+          item._id ||
+            item.id ||
+            ""
+        ),
+
+        name:
+          item.name || "",
+
+        image:
+          item.image || "",
+
+        price:
+          Number(
+            item.price || 0
+          ),
+
+        quantity:
+          Number(
+            item.quantity || 0
+          ),
+      })
+    );
+
+    /* =====================================================
+       SAVE ORDER TO MONGODB
+    ===================================================== */
+
+    try {
+      console.log(
+        "Sending order to:",
+        ORDERS_API_URL
+      );
+
+      const response =
+        await fetch(
+          ORDERS_API_URL,
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body: JSON.stringify({
+              customer: {
+                name:
+                  customer.name,
+
+                mobile:
+                  customer.phone,
+
+                address:
+                  customer.address,
+
+                area:
+                  customer.area,
+              },
+
+              items:
+                orderItems,
+
+              subtotal,
+
+              deliveryCharge,
+
+              total:
+                totalAmount,
+
+              paymentMethod:
+                "COD",
+            }),
+          }
+        );
+
+      const data =
+        await response.json();
+
+      console.log(
+        "Order API response:",
+        data
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            "Failed to place order"
+        );
+      }
+
+      console.log(
+        "Order saved successfully:",
+        data.order
+      );
+    } catch (error) {
+      console.error(
+        "Order save error:",
+        error
+      );
+
+      alert(
+        "Order save nahi ho paya. Please try again."
+      );
+
+      return;
+    }
+
+    /* =====================================================
+       WHATSAPP ORDER MESSAGE
+    ===================================================== */
+
+    const orderItemsMessage =
+      cart
+        .map(
+          (item) =>
+            `• ${item.name} x ${item.quantity} = ₹${
+              Number(
+                item.price || 0
+              ) *
+              Number(
+                item.quantity || 0
+              )
+            }`
+        )
+        .join("\n");
+
+    const message = `
+🎁 *NEW ORDER - GIVU*
+
+📋 *Order ID:* #${newOrderId}
+
+👤 *CUSTOMER DETAILS*
+
+Name: ${customer.name}
+Mobile: ${customer.phone}
+
+📍 *DELIVERY DETAILS*
+
+Area: ${customer.area}
+Address: ${customer.address}
+
+🛒 *ORDER ITEMS*
+
+${orderItemsMessage}
+
+💰 *SUBTOTAL:* ₹${subtotal}
+
+🚚 *DELIVERY CHARGE:* ${
+      deliveryCharge === 0
+        ? "FREE"
+        : `₹${deliveryCharge}`
+    }
+
+💰 *TOTAL AMOUNT:* ₹${totalAmount}
+
+💵 Payment: Cash on Delivery
+
+Thank you!
+`;
+
+    const whatsappURL =
+      `https://wa.me/916239901052?text=${encodeURIComponent(
+        message
+      )}`;
+
+    window.open(
+      whatsappURL,
+      "_blank"
+    );
+
+    /* =====================================================
+       ORDER CONFIRMATION
+    ===================================================== */
+
+    setOrderConfirmation({
+      customer,
+      cart,
+      subtotal,
+      deliveryCharge,
+      totalAmount,
+      orderId:
+        newOrderId,
+    });
+
+    setCart([]);
+
+    setIsCheckoutOpen(false);
+
+    setSelectedProduct(null);
+
+    window.history.pushState(
+      {
+        page:
+          "order-confirmation",
+      },
+      "",
+      window.location.pathname
+    );
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  /* =====================================================
+     CONTINUE SHOPPING
+  ===================================================== */
+
+  const continueShopping =
+    () => {
+      goHome(true);
+    };
+
+  /* =====================================================
+     ADMIN LOGIN
+  ===================================================== */
+
+  const openAdminLogin =
+    () => {
+      setAdminLogin(true);
+      setIsAdminLoggedIn(false);
+
+      setSelectedCategory(null);
+      setSelectedProductSection(null);
+      setSelectedProduct(null);
+      setSearchTerm("");
+
+      setIsCartOpen(false);
+      setIsCheckoutOpen(false);
+
+      window.history.pushState(
+        {
+          page:
+            "admin-login",
+        },
+        "",
+        window.location.pathname
+      );
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    };
+
+  /* =====================================================
+     ADMIN LOGIN SUCCESS
+  ===================================================== */
+
+  const handleAdminLogin =
+    () => {
+      setIsAdminLoggedIn(true);
+      setAdminLogin(false);
+
+      window.history.pushState(
+        {
+          page: "admin",
+        },
+        "",
+        window.location.pathname
+      );
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    };
+
+  /* =====================================================
+     ADMIN LOGOUT
+  ===================================================== */
+
+  const handleAdminLogout =
+    () => {
+      setIsAdminLoggedIn(false);
+      setAdminLogin(false);
+
+      setSelectedCategory(null);
+      setSelectedProductSection(null);
+      setSelectedProduct(null);
+      setSearchTerm("");
+
+      setIsCartOpen(false);
+      setIsCheckoutOpen(false);
+
+      window.history.pushState(
+        {
+          page: "home",
+        },
+        "",
+        window.location.pathname
+      );
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    };
+
+  /* =====================================================
+     ADMIN
+  ===================================================== */
+
+  if (isAdminLoggedIn) {
+    return (
+      <Admin
+        onLogout={
+          handleAdminLogout
+        }
+      />
+    );
+  }
+
+  /* =====================================================
+     ADMIN LOGIN
+  ===================================================== */
+
+  if (adminLogin) {
+    return (
+      <AdminLogin
+        onLogin={
+          handleAdminLogin
+        }
+      />
+    );
+  }
+
+  /* =====================================================
+     ORDER CONFIRMATION
+  ===================================================== */
+
+  if (orderConfirmation) {
+    return (
+      <OrderConfirmation
+        customer={
+          orderConfirmation.customer
+        }
+        cart={
+          orderConfirmation.cart
+        }
+        totalAmount={
+          orderConfirmation.totalAmount
+        }
+        orderId={
+          orderConfirmation.orderId
+        }
+        onContinueShopping={
+          continueShopping
+        }
+      />
+    );
+  }
+
+  /* =====================================================
+     PRODUCT DETAILS
+  ===================================================== */
+
+  if (selectedProduct) {
+    return (
+      <div>
+        <Navbar
+          cart={cart}
+          onCartClick={
+            openCart
+          }
+          onSearch={
+            handleSearch
+          }
+          searchTerm={
+            searchTerm
+          }
+          onHomeClick={() =>
+            goHome(true)
+          }
+        />
+
+        <ProductDetails
+          product={
+            selectedProduct
+          }
+          onAddToCart={
+            handleProductAddToCart
+          }
+          onBack={
+            backFromProductDetails
+          }
+        />
+
+        <Cart
+          cart={cart}
+          setCart={setCart}
+          isOpen={isCartOpen}
+          onClose={
+            closeCart
+          }
+          onCheckout={
+            openCheckout
+          }
+        />
+      </div>
+    );
+  }
+
+  /* =====================================================
+     CHECKOUT
+  ===================================================== */
+
+  if (isCheckoutOpen) {
+    return (
+      <Checkout
+        cart={cart}
+        onBackToCart={
+          backToCart
+        }
+        onPlaceOrder={
+          handlePlaceOrder
+        }
+      />
+    );
+  }
+
+  /* =====================================================
+     SEARCH RESULTS
+
+     NO GROUPING
+  ===================================================== */
+
+  if (searchTerm.trim()) {
+    return (
+      <div>
+        <Navbar
+          cart={cart}
+          onCartClick={
+            openCart
+          }
+          onSearch={
+            handleSearch
+          }
+          searchTerm={
+            searchTerm
+          }
+          onHomeClick={() =>
+            goHome(true)
+          }
+        />
+
+        <SearchResults
+          searchTerm={
+            searchTerm
+          }
+          onProductClick={
+            openProductDetails
+          }
+          onClearSearch={
+            clearSearch
+          }
+          onAddToCart={
+            handleProductAddToCart
+          }
+          products={
+            allProducts
+          }
+        />
+
+        <Cart
+          cart={cart}
+          setCart={setCart}
+          isOpen={isCartOpen}
+          onClose={
+            closeCart
+          }
+          onCheckout={
+            openCheckout
+          }
+        />
+      </div>
+    );
+  }
+
+  /* =====================================================
+     CATEGORY RESULTS
+  ===================================================== */
+
+  if (selectedCategory) {
+    return (
+      <div>
+        <Navbar
+          cart={cart}
+          onCartClick={
+            openCart
+          }
+          onSearch={
+            handleSearch
+          }
+          searchTerm={
+            searchTerm
+          }
+          onHomeClick={() =>
+            goHome(true)
+          }
+        />
+
+        <CategoryResults
+          category={
+            selectedCategory.name
+          }
+          products={
+            selectedCategory.products
+          }
+          onProductClick={
+            openProductDetails
+          }
+          onClearCategory={
+            clearCategory
+          }
+          onAddToCart={
+            handleProductAddToCart
+          }
+        />
+
+        <Cart
+          cart={cart}
+          setCart={setCart}
+          isOpen={isCartOpen}
+          onClose={
+            closeCart
+          }
+          onCheckout={
+            openCheckout
+          }
+        />
+      </div>
+    );
+  }
+
+  /* =====================================================
+     PRODUCT SECTION / VIEW ALL
+  ===================================================== */
 
   if (
-    product.pages !== undefined &&
-    product.pages !== null &&
-    product.pages !== ""
+    selectedProductSection
   ) {
-    details.push({
-      label: "Pages",
-      value: product.pages,
-    });
+    return (
+      <div>
+        <Navbar
+          cart={cart}
+          onCartClick={
+            openCart
+          }
+          onSearch={
+            handleSearch
+          }
+          searchTerm={
+            searchTerm
+          }
+          onHomeClick={() =>
+            goHome(true)
+          }
+        />
+
+        <CategoryResults
+          category={
+            selectedProductSection.title
+          }
+          products={
+            selectedProductSection.products
+          }
+          onProductClick={
+            openProductDetails
+          }
+          onClearCategory={
+            clearProductSection
+          }
+          onAddToCart={
+            handleProductAddToCart
+          }
+        />
+
+        <Cart
+          cart={cart}
+          setCart={setCart}
+          isOpen={isCartOpen}
+          onClose={
+            closeCart
+          }
+          onCheckout={
+            openCheckout
+          }
+        />
+      </div>
+    );
   }
 
-  if (product.pattern) {
-    details.push({
-      label: "Pattern",
-      value: product.pattern,
-    });
-  }
-
-  if (product.type) {
-    details.push({
-      label: "Type",
-      value: product.type,
-    });
-  }
-
-  if (product.size) {
-    details.push({
-      label: "Size",
-      value: product.size,
-    });
-  }
-
-  if (product.color) {
-    details.push({
-      label: "Color",
-      value: product.color,
-    });
-  }
+  /* =====================================================
+     HOME PAGE
+  ===================================================== */
 
   return (
-    <main className="product-details">
+    <div>
+      <Navbar
+        cart={cart}
+        onCartClick={
+          openCart
+        }
+        onSearch={
+          handleSearch
+        }
+        searchTerm={
+          searchTerm
+        }
+        onHomeClick={() =>
+          goHome(true)
+        }
+      />
 
-      {/* =================================================
-          BACK
-      ================================================= */}
+      <Hero />
 
-      <div className="product-details__top">
-        <button
-          type="button"
-          className="product-details__back"
-          onClick={onBack}
+      <CategorySection
+        onCategoryClick={
+          openCategory
+        }
+      />
+
+      {productsLoading ? (
+        <div
+          style={{
+            minHeight:
+              "200px",
+            display:
+              "flex",
+            alignItems:
+              "center",
+            justifyContent:
+              "center",
+          }}
         >
-          ← Back
-        </button>
-      </div>
+          Loading products...
+        </div>
+      ) : (
+        <>
+          {/* ================= TRENDING ================= */}
 
-      <div className="product-details__container">
+          <ProductSection
+            title="Trending Products"
+            eyebrow="WHAT'S POPULAR"
+            products={
+              websiteTrendingProducts
+            }
+            onProductClick={
+              openProductDetails
+            }
+            onAddToCart={
+              handleProductAddToCart
+            }
+            onViewAll={
+              openTrendingProducts
+            }
+          />
 
-        {/* =================================================
-            IMAGE
-        ================================================= */}
+          {/* ================= FRAMES ================= */}
 
-        <div className="product-details__gallery">
-          <div className="product-details__main-image">
+          <ProductSection
+            title="Frames"
+            eyebrow="SPECIAL MOMENTS"
+            products={
+              websiteProducts.filter(
+                (product) => {
+                  const category =
+                    normalizeValue(
+                      product?.category
+                    );
 
-            {product.image ? (
-              <img
-                src={product.image}
-                alt={
-                  product.name ||
-                  "Product"
+                  return (
+                    category ===
+                      "photo frames" ||
+                    category ===
+                      "resin frames"
+                  );
                 }
-              />
-            ) : (
-              <div className="product-details__placeholder">
-                📦
-              </div>
-            )}
+              )
+            }
+            onProductClick={
+              openProductDetails
+            }
+            onAddToCart={
+              handleProductAddToCart
+            }
+          />
 
-          </div>
-        </div>
+          {/* ================= KEYCHAINS ================= */}
 
-        {/* =================================================
-            INFORMATION
-        ================================================= */}
+          <ProductSection
+            title="Keychains"
+            eyebrow="SMALL & STYLISH"
+            products={
+              websiteProducts.filter(
+                (product) =>
+                  normalizeValue(
+                    product?.category
+                  ) ===
+                  "keychains"
+              )
+            }
+            onProductClick={
+              openProductDetails
+            }
+            onAddToCart={
+              handleProductAddToCart
+            }
+          />
 
-        <div className="product-details__info">
+          {/* ================= DAILY ESSENTIALS ================= */}
 
-          <span className="product-details__category">
-            {product.type ||
-              product.category ||
-              "Stationery"}
-          </span>
+          <ProductSection
+            title="Daily Essentials"
+            eyebrow="EVERYDAY ESSENTIALS"
+            products={
+              websiteProducts.filter(
+                (product) => {
+                  const category =
+                    normalizeValue(
+                      product?.category
+                    );
 
-          <h1>
-            {product.name}
-          </h1>
+                  return (
+                    category ===
+                      "bottles & tiffins" ||
+                    category.includes(
+                      "bottle"
+                    ) ||
+                    category ===
+                      "school & office" ||
+                    category ===
+                      "other stationery"
+                  );
+                }
+              )
+            }
+            onProductClick={
+              openProductDetails
+            }
+            onAddToCart={
+              handleProductAddToCart
+            }
+          />
+        </>
+      )}
 
-          {/* =================================================
-              PRICE
-          ================================================= */}
+      <OfferBanner />
 
-          <div className="product-details__price">
-            ₹{product.price}
-          </div>
+      <Footer
+        onAdminLogin={
+          openAdminLogin
+        }
+      />
 
-          {/* =================================================
-              STOCK
-          ================================================= */}
-
-          <div
-            className={`product-details__stock ${
-              stock <= 0
-                ? "product-details__stock--out"
-                : ""
-            }`}
-          >
-            {stock <= 0
-              ? "Out of Stock"
-              : stock <= 5
-                ? `Only ${stock} left`
-                : "In Stock"}
-          </div>
-
-          {/* =================================================
-              DETAILS
-          ================================================= */}
-
-          {details.length > 0 && (
-            <div className="product-details__specifications">
-
-              <h3>
-                Product Details
-              </h3>
-
-              <div className="product-details__spec-grid">
-
-                {details.map(
-                  (detail) => (
-                    <div
-                      className="product-details__spec"
-                      key={
-                        detail.label
-                      }
-                    >
-                      <span>
-                        {detail.label}
-                      </span>
-
-                      <strong>
-                        {detail.value}
-                      </strong>
-                    </div>
-                  )
-                )}
-
-              </div>
-            </div>
-          )}
-
-          {/* =================================================
-              DESCRIPTION
-          ================================================= */}
-
-          {product.description && (
-            <div className="product-details__description">
-
-              <h3>
-                Description
-              </h3>
-
-              <p>
-                {product.description}
-              </p>
-
-            </div>
-          )}
-
-          {/* =================================================
-              PURCHASE
-          ================================================= */}
-
-          <div className="product-details__purchase">
-
-            <div className="product-details__quantity">
-
-              <span>
-                Quantity
-              </span>
-
-              <div className="product-details__quantity-control">
-
-                <button
-                  type="button"
-                  onClick={
-                    decreaseQuantity
-                  }
-                  disabled={
-                    quantity <= 1
-                  }
-                >
-                  −
-                </button>
-
-                <strong>
-                  {quantity}
-                </strong>
-
-                <button
-                  type="button"
-                  onClick={
-                    increaseQuantity
-                  }
-                  disabled={
-                    stock <= 0 ||
-                    quantity >= stock
-                  }
-                >
-                  +
-                </button>
-
-              </div>
-
-            </div>
-
-            <button
-              type="button"
-              className="product-details__add"
-              onClick={
-                handleAddToCart
-              }
-              disabled={
-                stock <= 0
-              }
-            >
-              {stock <= 0
-                ? "Out of Stock"
-                : "Add to Cart"}
-            </button>
-
-          </div>
-
-        </div>
-      </div>
-
-    </main>
+      <Cart
+        cart={cart}
+        setCart={setCart}
+        isOpen={isCartOpen}
+        onClose={
+          closeCart
+        }
+        onCheckout={
+          openCheckout
+        }
+      />
+    </div>
   );
 }
 
-export default ProductDetails;
+export default App;

@@ -32,12 +32,12 @@ function Navbar({
         aria-label="Go to home"
       >
         <span className="navbar__logo-mark">
-          S
+          G
         </span>
 
         <div>
-          <h1>SHANKAR</h1>
-          <span>BOOK STORE</span>
+          <h1>GIVU</h1>
+          <span>A LITTLE SOMETHING FOR YOU</span>
         </div>
       </button>
 
@@ -48,7 +48,7 @@ function Navbar({
 
         <input
           type="text"
-          placeholder="Search notebooks, pens, art supplies..."
+          placeholder="Search gifts, keychains, art & craft..."
           value={searchTerm}
           onChange={(e) => {
             onSearch(e.target.value);

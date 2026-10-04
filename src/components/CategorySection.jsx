@@ -8,18 +8,18 @@ function CategorySection({ onCategoryClick }) {
   const categories = [
     {
       id: 1,
-      name: "Notebooks",
-      image: "/images/categories/notebooks.jpg",
+      name: "Cute Gifts",
+      image: "/images/categories/gifting.jpg",
     },
     {
       id: 2,
-      name: "Pens & Writing",
-      image: "/images/categories/pens.jpg",
+      name: "Keychains",
+      image: "/images/categories/keychains.jpg",
     },
     {
       id: 3,
-      name: "School & Office",
-      image: "/images/categories/school-office.jpg",
+      name: "Stationery",
+      image: "/images/categories/other-stationery.jpg",
     },
     {
       id: 4,
@@ -28,43 +28,23 @@ function CategorySection({ onCategoryClick }) {
     },
     {
       id: 5,
-      name: "Pencil Boxes",
-      image: "/images/categories/pencil-boxes.jpg",
-    },
-    {
-      id: 6,
-      name: "Bottles & Tiffins",
-      image: "/images/categories/bottles-tiffins.jpg",
-    },
-    {
-      id: 7,
-      name: "Keychains",
-      image: "/images/categories/keychains.jpg",
-    },
-    {
-      id: 8,
-      name: "Other Stationery",
-      image: "/images/categories/other-stationery.jpg",
-    },
-    {
-      id: 9,
-      name: "Gifting Items",
-      image: "/images/categories/gifting.jpg",
-    },
-    {
-      id: 10,
       name: "Photo Frames",
       image: "/images/photo-frames.jpg",
     },
     {
-      id: 11,
+      id: 6,
       name: "Resin Frames",
       image: "/images/resin-frames.jpg",
     },
     {
-      id: 12,
-      name: "Toys",
-      image: "/images/categories/toys.jpg",
+      id: 7,
+      name: "Diary & Notebooks",
+      image: "/images/categories/notebooks.jpg",
+    },
+    {
+      id: 8,
+      name: "All Products",
+      image: "/images/categories/all-products.jpg",
     },
   ];
 
@@ -72,12 +52,22 @@ function CategorySection({ onCategoryClick }) {
     setShowAll((prev) => !prev);
   };
 
+  const handleCategoryClick = (category) => {
+    onCategoryClick(category);
+  };
+
   return (
     <section className="categories" id="categories">
       <div className="categories__header">
-        <h2>
-          Shop by <strong>Category</strong>
-        </h2>
+        <div>
+          <span className="categories__eyebrow">
+            EXPLORE GIVU
+          </span>
+
+          <h2>
+            Shop by <strong>Category</strong>
+          </h2>
+        </div>
 
         <button
           type="button"
@@ -94,21 +84,32 @@ function CategorySection({ onCategoryClick }) {
             {categories.map((category) => (
               <button
                 type="button"
-                className="category-item"
+                className="category-card"
                 key={category.id}
-                onClick={() => onCategoryClick(category.name)}
+                onClick={() =>
+                  handleCategoryClick(category.name)
+                }
               >
-                <div className="category-item__image">
+                <div className="category-card__image-wrap">
                   <img
                     src={category.image}
                     alt={category.name}
+                    className="category-card__image"
                     loading="lazy"
                   />
+
+                  <div className="category-card__shine" />
                 </div>
 
-                <span className="category-item__name">
-                  {category.name}
-                </span>
+                <div className="category-card__bottom">
+                  <span className="category-card__name">
+                    {category.name}
+                  </span>
+
+                  <span className="category-card__arrow">
+                    →
+                  </span>
+                </div>
               </button>
             ))}
           </div>
@@ -118,21 +119,32 @@ function CategorySection({ onCategoryClick }) {
           {categories.map((category) => (
             <button
               type="button"
-              className="category-item category-item--grid"
+              className="category-card"
               key={category.id}
-              onClick={() => onCategoryClick(category.name)}
+              onClick={() =>
+                handleCategoryClick(category.name)
+              }
             >
-              <div className="category-item__image">
+              <div className="category-card__image-wrap">
                 <img
                   src={category.image}
                   alt={category.name}
+                  className="category-card__image"
                   loading="lazy"
                 />
+
+                <div className="category-card__shine" />
               </div>
 
-              <span className="category-item__name">
-                {category.name}
-              </span>
+              <div className="category-card__bottom">
+                <span className="category-card__name">
+                  {category.name}
+                </span>
+
+                <span className="category-card__arrow">
+                  →
+                </span>
+              </div>
             </button>
           ))}
         </div>

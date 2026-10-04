@@ -36,6 +36,7 @@ function ProductSection({
   return (
     <section className="product-section">
       {/* ================= HEADER ================= */}
+
       <div className="product-section__header">
         <div>
           {eyebrow && (
@@ -51,6 +52,7 @@ function ProductSection({
 
         {/* View All sirf tab show hoga
             jab onViewAll function diya gaya ho */}
+
         {typeof onViewAll === "function" && (
           <button
             type="button"
@@ -64,6 +66,7 @@ function ProductSection({
       </div>
 
       {/* ================= PRODUCTS ================= */}
+
       {visibleProducts.length > 0 ? (
         <div className="product-section__row">
           {visibleProducts.map((product) => (
@@ -79,6 +82,7 @@ function ProductSection({
               aria-label={`View ${product.name}`}
             >
               {/* ================= IMAGE ================= */}
+
               <div className="product-card__image">
                 {product.image ? (
                   <img
@@ -94,11 +98,12 @@ function ProductSection({
               </div>
 
               {/* ================= INFORMATION ================= */}
+
               <div className="product-card__info">
                 <span className="product-card__category">
                   {product.type ||
                     product.category ||
-                    "Stationery"}
+                    "GIVU"}
                 </span>
 
                 <h3>{product.name}</h3>
@@ -116,11 +121,13 @@ function ProductSection({
                 </p>
 
                 {/* ================= PRICE ================= */}
+
                 <div className="product-card__bottom">
                   <strong>₹{product.price}</strong>
                 </div>
 
                 {/* ================= ACTIONS ================= */}
+
                 <div className="product-card__actions">
                   <button
                     type="button"

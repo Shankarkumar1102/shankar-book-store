@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+
 import "./CategoryResults.css";
 
 function CategoryResults({
@@ -48,10 +49,7 @@ function CategoryResults({
      ADD TO CART
   ================================================== */
 
-  const handleAddToCart = (
-    event,
-    product
-  ) => {
+  const handleAddToCart = (event, product) => {
     event.stopPropagation();
 
     if (typeof onAddToCart === "function") {
@@ -63,12 +61,8 @@ function CategoryResults({
      PRODUCT CLICK
   ================================================== */
 
-  const handleProductClick = (
-    product
-  ) => {
-    if (
-      typeof onProductClick === "function"
-    ) {
+  const handleProductClick = (product) => {
+    if (typeof onProductClick === "function") {
       onProductClick(product);
     }
   };
@@ -78,9 +72,7 @@ function CategoryResults({
   ================================================== */
 
   const handleBack = () => {
-    if (
-      typeof onClearCategory === "function"
-    ) {
+    if (typeof onClearCategory === "function") {
       onClearCategory();
     }
   };
@@ -179,151 +171,147 @@ function CategoryResults({
         </div>
       ) : (
         <div className="category-results__grid">
-          {sortedProducts.map(
-            (product) => {
-              const productId =
-                product?._id ||
-                product?.id;
+          {sortedProducts.map((product) => {
+            const productId =
+              product?._id ||
+              product?.id;
 
-              const image =
-                product?.image;
+            const image =
+              product?.image;
 
-              const price =
-                Number(
-                  product?.price || 0
-                );
-
-              const offer =
-                product?.offer;
-
-              return (
-                <article
-                  className="category-product-card"
-                  key={productId}
-                  onClick={() =>
-                    handleProductClick(
-                      product
-                    )
-                  }
-                >
-                  {/* ==================================================
-                      IMAGE
-                  ================================================== */}
-
-                  <div className="category-product-card__image">
-                    {image ? (
-                      <img
-                        src={image}
-                        alt={
-                          product?.name ||
-                          "Product"
-                        }
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="category-product-card__placeholder">
-                        🛍️
-                      </div>
-                    )}
-
-                    {offer && (
-                      <span className="category-product-card__offer">
-                        {offer}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* ==================================================
-                      INFO
-                  ================================================== */}
-
-                  <div className="category-product-card__info">
-                    {product?.category && (
-                      <span className="category-product-card__category">
-                        {product.category}
-                      </span>
-                    )}
-
-                    <h3>
-                      {product?.name ||
-                        "Unnamed Product"}
-                    </h3>
-
-                    <p className="category-product-card__description">
-                      {product?.description ||
-                        "Quality product from Shankar Book Store."}
-                    </p>
-
-                    {/* ==================================================
-                        DETAILS
-                    ================================================== */}
-
-                    <div className="category-product-card__meta">
-                      {product?.size && (
-                        <span>
-                          Size:{" "}
-                          {product.size}
-                        </span>
-                      )}
-
-                      {product?.pages && (
-                        <span>
-                          Pages:{" "}
-                          {product.pages}
-                        </span>
-                      )}
-
-                      {product?.color && (
-                        <span>
-                          Color:{" "}
-                          {product.color}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* ==================================================
-                        PRICE
-                    ================================================== */}
-
-                    <div className="category-product-card__price">
-                      ₹{price}
-                    </div>
-
-                    {/* ==================================================
-                        ACTION BUTTONS
-                    ================================================== */}
-
-                    <div className="category-product-card__actions">
-                      <button
-                        className="category-product-card__add"
-                        onClick={(event) =>
-                          handleAddToCart(
-                            event,
-                            product
-                          )
-                        }
-                      >
-                        🛒 Add to Cart
-                      </button>
-
-                      <button
-                        className="category-product-card__details-button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-
-                          handleProductClick(
-                            product
-                          );
-                        }}
-                      >
-                        View Details
-                      </button>
-                    </div>
-                  </div>
-                </article>
+            const price =
+              Number(
+                product?.price || 0
               );
-            }
-          )}
+
+            const offer =
+              product?.offer;
+
+            return (
+              <article
+                className="category-product-card"
+                key={productId}
+                onClick={() =>
+                  handleProductClick(product)
+                }
+              >
+                {/* ==================================================
+                    IMAGE
+                ================================================== */}
+
+                <div className="category-product-card__image">
+                  {image ? (
+                    <img
+                      src={image}
+                      alt={
+                        product?.name ||
+                        "Product"
+                      }
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="category-product-card__placeholder">
+                      🛍️
+                    </div>
+                  )}
+
+                  {offer && (
+                    <span className="category-product-card__offer">
+                      {offer}
+                    </span>
+                  )}
+                </div>
+
+                {/* ==================================================
+                    INFO
+                ================================================== */}
+
+                <div className="category-product-card__info">
+                  {product?.category && (
+                    <span className="category-product-card__category">
+                      {product.category}
+                    </span>
+                  )}
+
+                  <h3>
+                    {product?.name ||
+                      "Unnamed Product"}
+                  </h3>
+
+                  <p className="category-product-card__description">
+                    {product?.description ||
+                      "A cute and thoughtful product from GIVU."}
+                  </p>
+
+                  {/* ==================================================
+                      DETAILS
+                  ================================================== */}
+
+                  <div className="category-product-card__meta">
+                    {product?.size && (
+                      <span>
+                        Size:{" "}
+                        {product.size}
+                      </span>
+                    )}
+
+                    {product?.pages && (
+                      <span>
+                        Pages:{" "}
+                        {product.pages}
+                      </span>
+                    )}
+
+                    {product?.color && (
+                      <span>
+                        Color:{" "}
+                        {product.color}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* ==================================================
+                      PRICE
+                  ================================================== */}
+
+                  <div className="category-product-card__price">
+                    ₹{price}
+                  </div>
+
+                  {/* ==================================================
+                      ACTION BUTTONS
+                  ================================================== */}
+
+                  <div className="category-product-card__actions">
+                    <button
+                      className="category-product-card__add"
+                      onClick={(event) =>
+                        handleAddToCart(
+                          event,
+                          product
+                        )
+                      }
+                    >
+                      🛒 Add to Cart
+                    </button>
+
+                    <button
+                      className="category-product-card__details-button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+
+                        handleProductClick(
+                          product
+                        );
+                      }}
+                    >
+                      View Details
+                    </button>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
         </div>
       )}
     </section>

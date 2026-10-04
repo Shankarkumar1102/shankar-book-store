@@ -1,50 +1,54 @@
 import { useEffect, useState } from "react";
+
 import "./Hero.css";
 
 const slides = [
   {
     id: 1,
-    tag: "BACK TO SCHOOL",
-    title: "Everything for",
-    highlight: "Your New Session",
+    tag: "CUTE GIFTS",
+    title: "Little Gifts,",
+    highlight: "Big Smiles",
     description:
-      "Notebooks, pens, pencil boxes and everyday school essentials at great prices.",
-    button: "Shop School Essentials",
-    emoji: "📚",
-    items: ["📓", "✏️", "🎒", "📐"],
+      "Discover cute and thoughtful gifts made to add a little happiness to every moment.",
+    button: "Shop Cute Gifts",
+    emoji: "🎁",
+    items: ["🎀", "🧸", "💝", "✨"],
   },
+
   {
     id: 2,
     tag: "TRENDING NOW",
     title: "Small Things,",
     highlight: "Big Style",
     description:
-      "Discover trending keychains, frames, bottles and stylish everyday products.",
+      "Explore trending keychains, stationery, frames and cute everyday products.",
     button: "Explore Trending",
     emoji: "✨",
-    items: ["🔑", "🖼️", "💧", "✨"],
+    items: ["🔑", "🖼️", "💖", "✨"],
   },
+
   {
     id: 3,
     tag: "ART & CRAFT",
     title: "Create More,",
     highlight: "Imagine More",
     description:
-      "Bring your ideas to life with creative art and craft supplies for everyone.",
+      "Bring your ideas to life with creative art and craft supplies made for everyone.",
     button: "Shop Art & Craft",
     emoji: "🎨",
     items: ["🎨", "🖌️", "✂️", "🖍️"],
   },
+
   {
     id: 4,
-    tag: "SHANKAR BOOK STORE",
-    title: "Your Local Store,",
-    highlight: "Now Online",
+    tag: "GIVU",
+    title: "A Little Something",
+    highlight: "for You.",
     description:
-      "Shop stationery, gifting and everyday essentials from Shankar Book Store.",
+      "Find something cute, creative and special for yourself or someone you love.",
     button: "Start Shopping",
-    emoji: "🛍️",
-    items: ["📚", "🎁", "🛒", "❤️"],
+    emoji: "💝",
+    items: ["🎁", "💖", "🛍️", "✨"],
   },
 ];
 
@@ -78,7 +82,6 @@ function Hero() {
   return (
     <section className="hero" id="home">
       <div className="hero__banner">
-
         {/* LEFT ARROW */}
         <button
           type="button"
@@ -91,26 +94,18 @@ function Hero() {
 
         {/* BANNER */}
         <div className="hero__slide" key={slide.id}>
-
           {/* LEFT CONTENT */}
           <div className="hero__content">
-            <span className="hero__tag">
-              {slide.tag}
-            </span>
+            <span className="hero__tag">{slide.tag}</span>
 
             <h1>
               {slide.title}
               <span>{slide.highlight}</span>
             </h1>
 
-            <p>
-              {slide.description}
-            </p>
+            <p>{slide.description}</p>
 
-            <a
-              href="#products"
-              className="hero__button"
-            >
+            <a href="#products" className="hero__button">
               {slide.button}
               <span>→</span>
             </a>
@@ -118,7 +113,6 @@ function Hero() {
 
           {/* RIGHT VISUAL */}
           <div className="hero__visual">
-
             <div className="hero__visual-circle"></div>
 
             <div className="hero__product-icons">
@@ -137,10 +131,9 @@ function Hero() {
             </div>
 
             <div className="hero__offer">
-              <small>SHOP</small>
-              <strong>LOCAL</strong>
+              <small>GIVE</small>
+              <strong>LOVE</strong>
             </div>
-
           </div>
         </div>
 
@@ -161,16 +154,13 @@ function Hero() {
               key={item.id}
               type="button"
               className={`hero__dot ${
-                currentSlide === index
-                  ? "hero__dot--active"
-                  : ""
+                currentSlide === index ? "hero__dot--active" : ""
               }`}
               onClick={() => goToSlide(index)}
               aria-label={`Go to banner ${index + 1}`}
             />
           ))}
         </div>
-
       </div>
     </section>
   );

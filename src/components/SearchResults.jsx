@@ -122,7 +122,7 @@ function SearchResults({
                 <span className="search-product-card__category">
                   {product.type ||
                     product.category ||
-                    "Stationery"}
+                    "GIVU"}
                 </span>
 
                 <h3>{product.name}</h3>
@@ -136,7 +136,7 @@ function SearchResults({
                       }`
                     : product.pattern ||
                       product.description ||
-                      "Quality stationery product."}
+                      "A cute and thoughtful product from GIVU."}
                 </p>
 
                 {/* ================= PRICE ================= */}
@@ -167,7 +167,6 @@ function SearchResults({
                     onClick={(event) => {
                       event.preventDefault();
                       event.stopPropagation();
-
                       handleProductClick(product);
                     }}
                   >
