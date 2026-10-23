@@ -2,144 +2,165 @@ import "./OrderConfirmation.css";
 
 function OrderConfirmation({
   customer,
-  cart,
+  cart = [],
+  subtotal = 0,
+  deliveryCharge = 0,
   totalAmount,
   orderId,
   onContinueShopping,
 }) {
+  const calculatedSubtotal = Number(subtotal) ||
+    cart.reduce(
+      (total, item) =>
+        total +
+        Number(item.price || 0) *
+          Number(item.quantity || 0),
+      0
+    );
+
+  const calculatedDelivery = Number(deliveryCharge) || 0;
+
+  const finalAmount =
+    totalAmount !== undefined && totalAmount !== null
+      ? Number(totalAmount)
+      : calculatedSubtotal + calculatedDelivery;
+
   return (
     <main className="order-confirmation">
-
       <div className="order-confirmation__card">
-
-        {/* Success Icon */}
-
+        {/* SUCCESS ICON */}
         <div className="order-confirmation__icon">
           ✓
         </div>
 
-        {/* Heading */}
-
+        {/* HEADING */}
         <span className="order-confirmation__eyebrow">
           ORDER CONFIRMED
         </span>
 
         <h1>
-          Thank you, <strong>{customer?.name}</strong>!
+          Thank you, <strong>{customer?.name || "Customer"}</strong>!
         </h1>
 
         <p className="order-confirmation__message">
-          Your stationery order has been placed successfully.
+          Your order has been placed successfully.
           We will deliver it to you soon.
         </p>
 
-
-        {/* Order ID */}
-
+        {/* ORDER ID */}
         <div className="order-confirmation__order-id">
-
-          <span>
-            ORDER ID
-          </span>
-
-          <strong>
-            #{orderId}
-          </strong>
-
+          <span>ORDER ID</span>
+          <strong>#{orderId}</strong>
         </div>
 
-
-        {/* Order Details */}
-
+        {/* ORDER DETAILS */}
         <div className="order-confirmation__details">
-
           <div className="order-confirmation__details-header">
-            <span>
-              YOUR ORDER
-            </span>
-
-            <h2>
-              Order Summary
-            </h2>
+            <span>YOUR ORDER</span>
+            <h2>Order Summary</h2>
           </div>
 
-
-          {cart.map((item) => (
-
+          {/* ORDERED PRODUCTS */}
+          {cart.map((item, index) => (
             <div
               className="order-confirmation__product"
-              key={item.id}
+              key={item.id ?? item._id ?? `${item.name}-${index}`}
             >
-
               <div className="order-confirmation__product-icon">
-                📓
+                {item.image ? (
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                    }}
+                  />
+                ) : (
+                  "🎁"
+                )}
               </div>
 
               <div>
-                <h3>
-                  {item.name}
-                </h3>
-
-                <p>
-                  Qty: {item.quantity}
-                </p>
+                <h3>{item.name}</h3>
+                <p>Qty: {item.quantity}</p>
               </div>
 
               <strong>
-                ₹{item.price * item.quantity}
+                ₹
+                {(
+                  Number(item.price || 0) *
+                  Number(item.quantity || 0)
+                ).toFixed(2).replace(/\.00$/, "")}
               </strong>
-
             </div>
-
           ))}
 
+          {/* PRICE BREAKDOWN */}
+          <div className="order-confirmation__price-breakdown">
+            <div className="order-confirmation__price-row">
+              <span>Subtotal</span>
+              <strong>
+                ₹
+                {calculatedSubtotal
+                  .toFixed(2)
+                  .replace(/\.00$/, "")}
+              </strong>
+            </div>
 
-          {/* Total */}
+            <div className="order-confirmation__price-row">
+              <span>Delivery Charge</span>
 
-          <div className="order-confirmation__total">
-
-            <span>
-              Total Amount
-            </span>
-
-            <strong>
-              ₹{totalAmount}
-            </strong>
-
+              <strong
+                className={
+                  calculatedDelivery === 0
+                    ? "order-confirmation__free-delivery"
+                    : ""
+                }
+              >
+                {calculatedDelivery === 0
+                  ? "FREE"
+                  : `₹${calculatedDelivery}`}
+              </strong>
+            </div>
           </div>
 
+          {/* FINAL TOTAL */}
+          <div className="order-confirmation__total">
+            <span>Total Amount</span>
+            <strong>
+              ₹
+              {finalAmount
+                .toFixed(2)
+                .replace(/\.00$/, "")}
+            </strong>
+          </div>
+
+          <p className="order-confirmation__payment">
+            💵 Payment Method: Cash on Delivery
+          </p>
         </div>
 
-
-        {/* Delivery Details */}
-
+        {/* DELIVERY DETAILS */}
         <div className="order-confirmation__delivery">
-
           <div className="order-confirmation__delivery-icon">
             🚚
           </div>
 
           <div>
+            <strong>Delivery Address</strong>
 
-            <strong>
-              Delivery to
-            </strong>
+            <p>{customer?.name}</p>
+            <p>{customer?.phone}</p>
+            <p>{customer?.area}</p>
 
-            <p>
-              {customer?.area}
-            </p>
-
-            <small>
-              {customer?.address}
-            </small>
-
+            <small>{customer?.address}</small>
           </div>
-
         </div>
 
-
-        {/* Continue Shopping */}
-
+        {/* CONTINUE SHOPPING */}
         <button
           type="button"
           className="order-confirmation__button"
@@ -147,9 +168,7 @@ function OrderConfirmation({
         >
           Continue Shopping →
         </button>
-
       </div>
-
     </main>
   );
 }

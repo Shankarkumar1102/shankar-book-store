@@ -13,39 +13,37 @@ function Checkout({
     area: "",
   });
 
-  const totalItems = cart.reduce(
-    (total, item) =>
-      total + Number(item.quantity || 0),
-    0
-  );
+  // ==================================================
+  // TOTAL ITEMS
+  // ==================================================
+  const totalItems = cart.length;
 
+  // ==================================================
+  // SUBTOTAL
+  // ==================================================
   const totalAmount = cart.reduce(
     (total, item) =>
-      total +
-      Number(item.price || 0) *
-        Number(item.quantity || 0),
+      total + Number(item.price || 0),
     0
   );
 
-  // ================= DELIVERY CHARGE =================
+  // ==================================================
+  // DELIVERY CHARGE
+  // ==================================================
+  // ₹299 or above = FREE
+  // Below ₹299 = ₹49
+  const deliveryCharge =
+    totalAmount >= 299 ? 0 : 49;
 
-  let deliveryCharge = 0;
-
-  if (totalAmount < 99) {
-    if (customer.area === "Mahilong") {
-      deliveryCharge = 10;
-    } else if (customer.area === "Tatisilwai") {
-      deliveryCharge = 20;
-    } else if (customer.area === "Namkum") {
-      deliveryCharge = 30;
-    }
-  }
-
+  // ==================================================
+  // FINAL TOTAL
+  // ==================================================
   const finalTotal =
     totalAmount + deliveryCharge;
 
-  // ================= INPUT CHANGE =================
-
+  // ==================================================
+  // HANDLE INPUT CHANGE
+  // ==================================================
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -55,31 +53,21 @@ function Checkout({
     }));
   };
 
-  // ================= PHONE CHANGE =================
-
-  const handlePhoneChange = (e) => {
-    const value = e.target.value
-      .replace(/\D/g, "")
-      .slice(0, 10);
-
-    setCustomer((current) => ({
-      ...current,
-      phone: value,
-    }));
-  };
-
-  // ================= PLACE ORDER =================
-
+  // ==================================================
+  // SUBMIT ORDER
+  // ==================================================
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!customer.name.trim()) {
-      alert("Please enter your name.");
-      return;
-    }
-
-    if (!customer.phone.trim()) {
-      alert("Please enter your mobile number.");
+    if (
+      !customer.name.trim() ||
+      !customer.phone.trim() ||
+      !customer.address.trim() ||
+      !customer.area
+    ) {
+      alert(
+        "Please fill all customer details."
+      );
       return;
     }
 
@@ -90,33 +78,13 @@ function Checkout({
       return;
     }
 
-    if (!customer.address.trim()) {
-      alert(
-        "Please enter your delivery address."
-      );
-      return;
-    }
-
-    if (!customer.area) {
-      alert(
-        "Please select your delivery area."
-      );
-      return;
-    }
-
-    onPlaceOrder({
-      ...customer,
-      deliveryCharge,
-      subtotal: totalAmount,
-      total: finalTotal,
-    });
+    onPlaceOrder(customer);
   };
 
   return (
     <main className="checkout">
 
       {/* ================= HEADER ================= */}
-
       <div className="checkout__header">
 
         <button
@@ -142,37 +110,35 @@ function Checkout({
 
       </div>
 
-      {/* ================= CONTENT ================= */}
-
+      {/* ================= MAIN CONTENT ================= */}
       <div className="checkout__content">
 
-        {/* ================= CUSTOMER FORM ================= */}
-
+        {/* ==================================================
+            CUSTOMER FORM
+        ================================================== */}
         <form
           className="checkout__form"
           onSubmit={handleSubmit}
         >
 
+          {/* SECTION TITLE */}
           <div className="checkout__section-title">
-
             <span>01</span>
 
             <div>
               <h2>Customer Details</h2>
 
               <p>
-                Enter your delivery information.
+                Where should we deliver your order?
               </p>
             </div>
-
           </div>
 
+          {/* ================= FIELDS ================= */}
           <div className="checkout__fields">
 
-            {/* ================= NAME ================= */}
-
+            {/* NAME */}
             <div className="checkout__field">
-
               <label htmlFor="name">
                 Full Name
               </label>
@@ -185,13 +151,10 @@ function Checkout({
                 value={customer.name}
                 onChange={handleChange}
               />
-
             </div>
 
-            {/* ================= PHONE ================= */}
-
+            {/* PHONE */}
             <div className="checkout__field">
-
               <label htmlFor="phone">
                 Mobile Number
               </label>
@@ -204,15 +167,22 @@ function Checkout({
                 maxLength="10"
                 placeholder="10-digit mobile number"
                 value={customer.phone}
-                onChange={handlePhoneChange}
-              />
+                onChange={(e) => {
+                  const value =
+                    e.target.value
+                      .replace(/\D/g, "")
+                      .slice(0, 10);
 
+                  setCustomer((current) => ({
+                    ...current,
+                    phone: value,
+                  }));
+                }}
+              />
             </div>
 
-            {/* ================= ADDRESS ================= */}
-
+            {/* ADDRESS */}
             <div className="checkout__field checkout__field--full">
-
               <label htmlFor="address">
                 Delivery Address
               </label>
@@ -225,13 +195,10 @@ function Checkout({
                 value={customer.address}
                 onChange={handleChange}
               />
-
             </div>
 
-            {/* ================= AREA ================= */}
-
+            {/* AREA */}
             <div className="checkout__field checkout__field--full">
-
               <label htmlFor="area">
                 Delivery Area
               </label>
@@ -242,7 +209,6 @@ function Checkout({
                 value={customer.area}
                 onChange={handleChange}
               >
-
                 <option value="">
                   Select your area
                 </option>
@@ -258,23 +224,21 @@ function Checkout({
                 <option value="Namkum">
                   Namkum
                 </option>
-
               </select>
-
             </div>
 
           </div>
 
-          {/* ================= DELIVERY INFO ================= */}
-
+          {/* ==================================================
+              DELIVERY INFORMATION
+          ================================================== */}
           <div className="checkout__delivery-note">
 
             <span>🚚</span>
 
             <div>
-
               <strong>
-                Local Delivery
+                Local Evening Delivery
               </strong>
 
               <p>
@@ -282,45 +246,11 @@ function Checkout({
                 <br />
                 Delivery available from 4 PM – 9 PM
               </p>
-
             </div>
-
-          </div>
-
-          {/* ================= CURRENT DELIVERY CHARGE ================= */}
-
-          <div className="checkout__delivery-status">
-
-            <div>
-              <span>Delivery Charge</span>
-
-              <strong>
-                {totalAmount >= 99
-                  ? "FREE"
-                  : customer.area
-                  ? `₹${deliveryCharge}`
-                  : "Select Area"}
-              </strong>
-            </div>
-
-            <p>
-
-              {totalAmount >= 99
-                ? "🎉 Your order qualifies for FREE delivery."
-                : customer.area === "Mahilong"
-                ? "🚚 Mahilong delivery charge is ₹10."
-                : customer.area === "Tatisilwai"
-                ? "🚚 Tatisilwai delivery charge is ₹20."
-                : customer.area === "Namkum"
-                ? "🚚 Namkum delivery charge is ₹30."
-                : "📍 Select your area to see the delivery charge."}
-
-            </p>
 
           </div>
 
           {/* ================= BUTTONS ================= */}
-
           <div className="checkout__buttons">
 
             <button
@@ -342,10 +272,12 @@ function Checkout({
 
         </form>
 
-        {/* ================= ORDER SUMMARY ================= */}
-
+        {/* ==================================================
+            ORDER SUMMARY
+        ================================================== */}
         <aside className="checkout__summary">
 
+          {/* SUMMARY HEADER */}
           <div className="checkout__summary-header">
 
             <span>
@@ -358,34 +290,32 @@ function Checkout({
 
           </div>
 
-          {/* ================= PRODUCTS ================= */}
-
+          {/* ==================================================
+              PRODUCTS
+          ================================================== */}
           <div className="checkout__products">
 
             {cart.map((item) => (
-
               <div
                 className="checkout__product"
                 key={`${item.category || "product"}-${item.id}`}
               >
 
+                {/* PRODUCT IMAGE */}
                 <div className="checkout__product-image">
 
                   {item.image ? (
-
                     <img
                       src={item.image}
                       alt={item.name}
                     />
-
                   ) : (
-
                     <span>📦</span>
-
                   )}
 
                 </div>
 
+                {/* PRODUCT INFO */}
                 <div className="checkout__product-info">
 
                   <h3>
@@ -399,37 +329,25 @@ function Checkout({
                             ? ` • ${item.pattern}`
                             : ""
                         }`
-                      : item.pattern ||
-                        item.description ||
-                        ""}
+                      : item.pattern || ""}
                   </p>
+</div>
 
-                  <span>
-                    Qty: {item.quantity}
-                  </span>
-
-                </div>
-
-                <strong>
-                  ₹
-                  {Number(item.price || 0) *
-                    Number(item.quantity || 0)}
-                </strong>
+                {/* ITEM TOTAL */}
+                <strong>₹{Number(item.price || 0)}</strong>
 
               </div>
-
             ))}
 
           </div>
 
-          {/* ================= TOTALS ================= */}
-
+          {/* ==================================================
+              TOTALS
+          ================================================== */}
           <div className="checkout__totals">
 
             {/* PRODUCTS */}
-
             <div className="checkout__row">
-
               <span>
                 Products
               </span>
@@ -437,13 +355,10 @@ function Checkout({
               <span>
                 {totalItems}
               </span>
-
             </div>
 
             {/* SUBTOTAL */}
-
             <div className="checkout__row">
-
               <span>
                 Subtotal
               </span>
@@ -451,98 +366,37 @@ function Checkout({
               <span>
                 ₹{totalAmount}
               </span>
-
             </div>
 
             {/* DELIVERY */}
-
             <div className="checkout__row">
-
               <span>
                 Delivery
               </span>
 
-              <span>
-
-                {totalAmount >= 99 ? (
-
-                  <span className="checkout__free">
-                    FREE
-                  </span>
-
-                ) : !customer.area ? (
-
-                  <span className="checkout__delivery-charge">
-                    Select Area
-                  </span>
-
-                ) : (
-
-                  <span className="checkout__delivery-charge">
-                    ₹{deliveryCharge}
-                  </span>
-
-                )}
-
-              </span>
-
+              {deliveryCharge === 0 ? (
+                <span className="checkout__free">
+                  FREE
+                </span>
+              ) : (
+                <span className="checkout__delivery-charge">
+                  ₹49
+                </span>
+              )}
             </div>
 
-            {/* ================= DELIVERY MESSAGE ================= */}
-
-            {totalAmount >= 99 ? (
-
+            {/* FREE DELIVERY MESSAGE */}
+            {totalAmount < 299 && (
               <div className="checkout__delivery-message">
-
-                🎉 FREE delivery on orders
-                of ₹99 or above.
-
+                Add ₹{299 - totalAmount} more
+                for FREE delivery
               </div>
-
-            ) : customer.area === "Mahilong" ? (
-
-              <div className="checkout__delivery-message">
-
-                🚚 Mahilong delivery charge:
-                ₹10
-
-              </div>
-
-            ) : customer.area === "Tatisilwai" ? (
-
-              <div className="checkout__delivery-message">
-
-                🚚 Tatisilwai delivery charge:
-                ₹20
-
-              </div>
-
-            ) : customer.area === "Namkum" ? (
-
-              <div className="checkout__delivery-message">
-
-                🚚 Namkum delivery charge:
-                ₹30
-
-              </div>
-
-            ) : (
-
-              <div className="checkout__delivery-message">
-
-                📍 Select your delivery area
-                to calculate delivery charges.
-
-              </div>
-
             )}
 
-            {/* ================= DIVIDER ================= */}
-
+            {/* DIVIDER */}
             <div className="checkout__divider" />
 
-            {/* ================= FINAL TOTAL ================= */}
-
+            {/* FINAL TOTAL */}
             <div className="checkout__total">
 
               <span>
@@ -557,22 +411,21 @@ function Checkout({
 
           </div>
 
-          {/* ================= PAYMENT ================= */}
-
+          {/* ==================================================
+              PAYMENT INFO
+          ================================================== */}
           <div className="checkout__payment">
 
             <span>💵</span>
 
             <div>
-
               <strong>
-                Cash on Delivery
+                Payment on Delivery
               </strong>
 
               <p>
                 Pay when your order is delivered.
               </p>
-
             </div>
 
           </div>

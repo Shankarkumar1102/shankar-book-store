@@ -611,12 +611,12 @@ function Admin({ onLogout }) {
         {/* BRAND */}
 
         <div className="admin__brand">
-          <div className="admin__brand-mark">
-            S
+          <div className="admin__brand-mark" style={{ width: "auto", minWidth: 76, padding: "0 12px", fontSize: 22, letterSpacing: "-1px" }}>
+            GIVU
           </div>
 
           <div>
-            <h1>SHANKAR</h1>
+            <h1>GIVU</h1>
             <span>ADMIN PANEL</span>
           </div>
         </div>
@@ -707,7 +707,7 @@ function Admin({ onLogout }) {
         <header className="admin__topbar">
           <div>
             <span className="admin__eyebrow">
-              SHANKAR BOOK STORE
+              GIVU
             </span>
 
             <h2>

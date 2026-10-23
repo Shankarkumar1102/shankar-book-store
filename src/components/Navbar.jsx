@@ -8,8 +8,7 @@ function Navbar({
   onHomeClick,
 }) {
   const totalItems = cart.reduce(
-    (total, item) =>
-      total + Number(item.quantity || 0),
+    (total, item) => total + Number(item.quantity || 0),
     0
   );
 
@@ -24,16 +23,13 @@ function Navbar({
   return (
     <nav className="navbar">
       {/* ================= LOGO ================= */}
-
       <button
         type="button"
         className="navbar__logo"
         onClick={handleHome}
         aria-label="Go to home"
       >
-        <span className="navbar__logo-mark">
-          G
-        </span>
+        <span className="navbar__logo-mark">G</span>
 
         <div>
           <h1>GIVU</h1>
@@ -42,7 +38,6 @@ function Navbar({
       </button>
 
       {/* ================= SEARCH ================= */}
-
       <div className="navbar__search">
         <span>⌕</span>
 
@@ -57,12 +52,8 @@ function Navbar({
       </div>
 
       {/* ================= LINKS ================= */}
-
       <div className="navbar__links">
-        <a
-          href="/"
-          onClick={handleHome}
-        >
+        <a href="/" onClick={handleHome}>
           Home
         </a>
 
@@ -71,15 +62,12 @@ function Navbar({
         </a>
 
         {/* ================= CART ================= */}
-
         <button
           type="button"
           className="navbar__cart"
           onClick={onCartClick}
         >
-          <span className="navbar__cart-icon">
-            🛒
-          </span>
+          <span className="navbar__cart-icon">🛒</span>
 
           <span>Cart</span>
 

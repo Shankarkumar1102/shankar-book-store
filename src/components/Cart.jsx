@@ -14,51 +14,6 @@ function Cart({
       item._id || item.id
     }`;
 
-  // ================= INCREASE QUANTITY =================
-
-  const increaseQuantity = (item) => {
-    setCart((currentCart) =>
-      currentCart.map((cartItem) =>
-        getItemKey(cartItem) ===
-        getItemKey(item)
-          ? {
-              ...cartItem,
-              quantity:
-                Number(
-                  cartItem.quantity || 0
-                ) + 1,
-            }
-          : cartItem
-      )
-    );
-  };
-
-  // ================= DECREASE QUANTITY =================
-
-  const decreaseQuantity = (item) => {
-    setCart((currentCart) =>
-      currentCart
-        .map((cartItem) =>
-          getItemKey(cartItem) ===
-          getItemKey(item)
-            ? {
-                ...cartItem,
-                quantity:
-                  Number(
-                    cartItem.quantity || 0
-                  ) - 1,
-              }
-            : cartItem
-        )
-        .filter(
-          (cartItem) =>
-            Number(
-              cartItem.quantity || 0
-            ) > 0
-        )
-    );
-  };
-
   // ================= REMOVE ITEM =================
 
   const removeItem = (item) => {
@@ -71,22 +26,15 @@ function Cart({
     );
   };
 
-  // ================= TOTAL ITEMS =================
+  // ================= TOTAL PRODUCTS =================
 
-  const totalItems = cart.reduce(
-    (total, item) =>
-      total +
-      Number(item.quantity || 0),
-    0
-  );
+  const totalItems = cart.length;
 
   // ================= SUBTOTAL =================
 
   const subtotal = cart.reduce(
     (total, item) =>
-      total +
-      Number(item.price || 0) *
-        Number(item.quantity || 0),
+      total + Number(item.price || 0),
     0
   );
 
@@ -293,45 +241,11 @@ function Cart({
                       ₹{item.price}
                     </strong>
 
-                    {/* QUANTITY ACTIONS */}
-
                     <div className="cart-drawer__actions">
-                      <div className="cart-drawer__quantity">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            decreaseQuantity(
-                              item
-                            )
-                          }
-                          aria-label={`Decrease quantity of ${item.name}`}
-                        >
-                          −
-                        </button>
-
-                        <span>
-                          {item.quantity}
-                        </span>
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            increaseQuantity(
-                              item
-                            )
-                          }
-                          aria-label={`Increase quantity of ${item.name}`}
-                        >
-                          +
-                        </button>
-                      </div>
-
                       <button
                         type="button"
                         className="cart-drawer__remove"
-                        onClick={() =>
-                          removeItem(item)
-                        }
+                        onClick={() => removeItem(item)}
                       >
                         Remove
                       </button>
@@ -340,15 +254,7 @@ function Cart({
 
                   {/* ITEM TOTAL */}
 
-                  <strong className="cart-drawer__item-total">
-                    ₹
-                    {Number(
-                      item.price || 0
-                    ) *
-                      Number(
-                        item.quantity || 0
-                      )}
-                  </strong>
+                  <strong className="cart-drawer__item-total">₹{Number(item.price || 0)}</strong>
                 </article>
               ))}
             </div>

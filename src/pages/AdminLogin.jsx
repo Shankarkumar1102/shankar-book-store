@@ -1,5 +1,4 @@
 import { useState } from "react";
-
 import "./AdminLogin.css";
 
 function AdminLogin({ onLogin }) {
@@ -10,131 +9,86 @@ function AdminLogin({ onLogin }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     setError("");
 
-    // Empty field validation
     if (!username.trim() || !password.trim()) {
-      setError(
-        "Please enter your username and password."
-      );
+      setError("Please enter your username and password.");
       return;
     }
 
-    // Admin credentials
-    if (
-      username.trim() === "admin" &&
-      password === "shankar123"
-    ) {
-      // App.jsx handles the login state
-      if (onLogin) {
+    if (username.trim() === "admin" && password === "shankar123") {
+      if (typeof onLogin === "function") {
         onLogin();
+      } else {
+        setError("Login connection failed. Please check App.jsx.");
       }
-
       return;
     }
 
-    // Wrong credentials
     setError("Invalid username or password.");
   };
 
   return (
     <main className="admin-login">
-
-      {/* ================= LEFT SIDE ================= */}
-
       <section className="admin-login__brand">
         <div className="admin-login__brand-inner">
-
-          <div className="admin-login__logo">
-            S
+          <div
+            className="admin-login__logo"
+            style={{
+              width: "auto",
+              minWidth: 112,
+              padding: "0 16px",
+              fontSize: 34,
+              letterSpacing: "-1.5px",
+            }}
+            aria-label="GIVU logo"
+          >
+            GIVU
           </div>
 
-          <span className="admin-login__eyebrow">
-            SHANKAR BOOK STORE
-          </span>
+          <span className="admin-login__eyebrow">GIVU</span>
 
           <h1>
-            Manage your store.
+            Manage <span style={{ color: "var(--color-peach, #F9A35B)" }}>your</span> store.
           </h1>
 
           <p>
-            Products, orders and everything
-            your store needs — all in one place.
+            Products, orders and everything your store needs — all in one
+            place.
           </p>
 
           <div className="admin-login__features">
-
             <div>
               <span>✓</span>
-              <p>
-                Manage products
-              </p>
+              <p>Manage products</p>
             </div>
-
             <div>
               <span>✓</span>
-              <p>
-                Track customer orders
-              </p>
+              <p>Track customer orders</p>
             </div>
-
             <div>
               <span>✓</span>
-              <p>
-                Grow your store
-              </p>
+              <p>Grow your store</p>
             </div>
-
           </div>
-
         </div>
       </section>
 
-      {/* ================= LOGIN SIDE ================= */}
-
       <section className="admin-login__form-section">
-
         <div className="admin-login__form-container">
-
           <div className="admin-login__heading">
-
-            <span>
-              ADMIN ACCESS
-            </span>
-
+            <span>ADMIN ACCESS</span>
             <h2>
-              Welcome back
+              Welcome <span style={{ color: "#F28A19" }}>back</span>
             </h2>
-
-            <p>
-              Sign in to access your store
-              dashboard.
-            </p>
-
+            <p>Sign in to access your store dashboard.</p>
           </div>
 
-          {/* ================= FORM ================= */}
-
-          <form
-            className="admin-login__form"
-            onSubmit={handleSubmit}
-          >
-
-            {/* ================= USERNAME ================= */}
-
+          <form className="admin-login__form" onSubmit={handleSubmit}>
             <label>
-
-              <span>
-                Username
-              </span>
-
+              <span>Username</span>
               <div className="admin-login__input">
-
-                <span>
-                  ◉
-                </span>
-
+                <span>◉</span>
                 <input
                   type="text"
                   placeholder="Enter username"
@@ -145,31 +99,15 @@ function AdminLogin({ onLogin }) {
                     setError("");
                   }}
                 />
-
               </div>
-
             </label>
 
-            {/* ================= PASSWORD ================= */}
-
             <label>
-
-              <span>
-                Password
-              </span>
-
+              <span>Password</span>
               <div className="admin-login__input">
-
-                <span>
-                  ●
-                </span>
-
+                <span>●</span>
                 <input
-                  type={
-                    showPassword
-                      ? "text"
-                      : "password"
-                  }
+                  type={showPassword ? "text" : "password"}
                   placeholder="Enter password"
                   value={password}
                   autoComplete="current-password"
@@ -178,57 +116,27 @@ function AdminLogin({ onLogin }) {
                     setError("");
                   }}
                 />
-
                 <button
                   type="button"
                   className="admin-login__show"
-                  onClick={() =>
-                    setShowPassword(
-                      (current) => !current
-                    )
-                  }
-                  aria-label={
-                    showPassword
-                      ? "Hide password"
-                      : "Show password"
-                  }
+                  onClick={() => setShowPassword((current) => !current)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword
-                    ? "Hide"
-                    : "Show"}
+                  {showPassword ? "Hide" : "Show"}
                 </button>
-
               </div>
-
             </label>
 
-            {/* ================= ERROR ================= */}
-
             {error && (
-              <div className="admin-login__error">
-
-                <span>
-                  !
-                </span>
-
-                {error}
-
+              <div className="admin-login__error" role="alert">
+                <span>!</span> {error}
               </div>
             )}
 
-            {/* ================= LOGIN BUTTON ================= */}
-
-            <button
-              type="submit"
-              className="admin-login__submit"
-            >
-              Sign In
-              <span>→</span>
+            <button type="submit" className="admin-login__submit">
+              Sign In <span>→</span>
             </button>
-
           </form>
-
-          {/* ================= BACK TO STORE ================= */}
 
           <button
             type="button"
@@ -239,11 +147,8 @@ function AdminLogin({ onLogin }) {
           >
             ← Back to Store
           </button>
-
         </div>
-
       </section>
-
     </main>
   );
 }
